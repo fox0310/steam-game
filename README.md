@@ -22,6 +22,46 @@ npm start
 - Player 3：`http://localhost:5173/?player=2`
 - Player 4：`http://localhost:5173/?player=3`
 
+## 學校主機部署
+
+如果不想依賴自己的 Mac，可以把遊戲放到另一部連接學校網絡的電腦，讓它做遊戲主機。
+
+主機電腦需要：
+
+- 已安裝 Node.js 20 或以上
+- 已連接學校 Wi-Fi / LAN
+- 防火牆允許其他電腦連入 port `5173`
+
+在主機電腦執行：
+
+```bash
+git clone https://github.com/fox0310/steam-game.git
+cd steam-game
+npm install
+npm start
+```
+
+啟動後 terminal 會顯示類似：
+
+```text
+Local: http://localhost:5173
+LAN:   http://192.168.1.73:5173
+```
+
+其他學校網絡內的電腦使用 `LAN` 地址進入：
+
+- Host：`http://192.168.1.73:5173/?role=host`
+- Player 1：`http://192.168.1.73:5173/?player=0`
+- Player 2：`http://192.168.1.73:5173/?player=1`
+- Player 3：`http://192.168.1.73:5173/?player=2`
+- Player 4：`http://192.168.1.73:5173/?player=3`
+
+如果想長期使用固定網址，請學校 IT 幫主機電腦設定固定 IP 或內網 DNS，例如：
+
+```text
+http://goldminer.school:5173/?role=host
+```
+
 ## 操作
 
 - 每位 Player 頁面都用 Space 出爪
