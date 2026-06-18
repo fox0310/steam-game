@@ -76,19 +76,22 @@ localtunnel 第一次進入會顯示確認頁，password 是：
 
 正式活動建議改用固定公網部署或 Cloudflare Tunnel，避免免費 tunnel 換網址。
 
-## Render 正式部署
+## Koyeb 正式部署
 
-1. 把此專案推到 GitHub。
-2. 到 Render 新增 `Blueprint` 或 `Web Service`。
-3. 選擇這個 GitHub repo。
-4. Start command 使用 `npm start`。
-5. Render 部署完成後，用 Render 網址加參數：
+1. 到 Koyeb 建立 `Web Service`。
+2. 選擇 GitHub repo：`fox0310/steam-game`。
+3. Runtime 選 Node.js。
+4. Build command 留空或使用 `npm install`。
+5. Run command 使用 `npm start`。
+6. 部署完成後，用 Koyeb 網址加參數：
 
-- Host：`https://你的服務網址/?role=host`
-- Player 1：`https://你的服務網址/?player=0`
-- Player 2：`https://你的服務網址/?player=1`
-- Player 3：`https://你的服務網址/?player=2`
-- Player 4：`https://你的服務網址/?player=3`
+- Host：`https://你的-koyeb-url/?role=host`
+- Player 1：`https://你的-koyeb-url/?player=0`
+- Player 2：`https://你的-koyeb-url/?player=1`
+- Player 3：`https://你的-koyeb-url/?player=2`
+- Player 4：`https://你的-koyeb-url/?player=3`
+
+Server 會自動使用 Koyeb 提供的 `PORT`。
 
 ## 素材來源
 
