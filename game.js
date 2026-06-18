@@ -1,6 +1,7 @@
 const canvas = document.querySelector("#game");
 const ctx = canvas.getContext("2d");
 const views = document.querySelector("#views");
+const hostLinks = document.querySelector("#host-links");
 const wrap = document.querySelector(".wrap");
 const W = canvas.width, H = canvas.height;
 const colors = ["#f05d5e", "#4da3ff", "#54d17a", "#ffd23f"];
@@ -34,6 +35,7 @@ const pageRole = params.get("role") === "host" ? "host" : (params.has("player") 
 let online = false, serverState = null, ws = null;
 if (params.has("player")) view = String(playerId);
 connect();
+loadHostLinks();
 
 function fire(p) {
   if (online) return ws.send(JSON.stringify({ type: "fire", player: playerId }));
@@ -99,6 +101,20 @@ function connect() {
     }
   };
   ws.onclose = () => online = false;
+}
+
+async function loadHostLinks() {
+  if (pageRole !== "host" || !location.protocol.startsWith("http")) return;
+  try {
+    const res = await fetch("/api/host");
+    const data = await res.json();
+    hostLinks.style.display = "flex";
+    hostLinks.innerHTML = `<strong>連線網址：</strong>${linkButton("Host", data.urls.host)}${data.urls.players.map((url, i) => linkButton(`P${i + 1}`, url)).join("")}`;
+  } catch {}
+}
+
+function linkButton(label, url) {
+  return `<button data-copy="${url}">${label}: ${url}</button>`;
 }
 
 function applyServerState() {
@@ -248,6 +264,10 @@ document.querySelector("#reset").onclick = () => {
   if (online && pageRole === "host") ws.send(JSON.stringify({ type: "reset" }));
   else location.reload();
 };
+hostLinks.addEventListener("click", e => {
+  const url = e.target.dataset.copy;
+  if (url) navigator.clipboard?.writeText(url);
+});
 addEventListener("keydown", e => {
   startMusic();
   if (e.code !== "Space" || pageRole === "host") return;

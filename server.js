@@ -47,6 +47,13 @@ function resetGame() {
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
+  if (url.pathname === "/api/host") {
+    const base = req.headers.host?.includes("localhost")
+      ? lanUrls()[0] || `http://localhost:${port}`
+      : `${req.headers["x-forwarded-proto"] || "http"}://${req.headers.host}`;
+    res.writeHead(200, { "content-type": "application/json" });
+    return res.end(JSON.stringify({ base, urls: makeUrls(base) }));
+  }
   const file = path.normalize(url.pathname === "/" ? "index.html" : url.pathname.slice(1));
   if (file.startsWith("..")) return res.writeHead(403).end();
   fs.readFile(path.join(root, file), (err, data) => {
@@ -194,6 +201,13 @@ function lanUrls() {
     .flat()
     .filter(i => i && i.family === "IPv4" && !i.internal)
     .map(i => `http://${i.address}:${port}`);
+}
+
+function makeUrls(base) {
+  return {
+    host: `${base}/?role=host`,
+    players: [0, 1, 2, 3].map(i => `${base}/?player=${i}`)
+  };
 }
 
 setInterval(tick, 1000 / 30);

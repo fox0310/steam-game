@@ -41,6 +41,15 @@
     }
     button.active { background: #b7791f; color: #1b1209; }
     .hint { margin-left: auto; color: #d8c48d; font-size: 14px; }
+    .links {
+      display: none;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    .links button { padding: 6px 8px; }
+    .links strong { align-self: center; color: #ffe3a0; }
     canvas {
       width: 100%;
       aspect-ratio: 16 / 9;
@@ -59,6 +68,7 @@
 <body>
   <main class="wrap">
     <div class="bar" id="views"></div>
+    <div class="links" id="host-links"></div>
     <canvas id="game" width="1280" height="720" aria-label="四人共享礦場競技遊戲"></canvas>
   </main>
   <script src="game.js"></script>
