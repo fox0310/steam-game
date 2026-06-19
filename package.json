@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "start:gold": "node server.js",
+    "start:fishing": "node fishing-game/server.js",
+    "start:all": "sh -c 'node server.js & node fishing-game/server.js & wait'"
   },
   "engines": {
     "node": ">=20"

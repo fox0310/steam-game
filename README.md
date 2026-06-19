@@ -1,4 +1,35 @@
-# 共享礦場競技
+# Steam Game
+
+這個 repo 目前包含兩個四人聯網 Canvas 遊戲：
+
+- `.`：共享礦場競技
+- `fishing-game/`：四人共享海域捕魚競技
+
+## 同時運行兩隻遊戲
+
+同一部電腦 / VM 下載這個 repo 後，可以同時開掘金和釣魚，兩隻遊戲用不同 port，所以不會互相覆蓋。
+
+```bash
+npm run start:all
+```
+
+網址：
+
+- 掘金 Host：`http://localhost:5173/?role=host`
+- 掘金 Player：`http://localhost:5173/?player=0`
+- 釣魚 Host：`http://localhost:5180/?role=host`
+- 釣魚 Player：`http://localhost:5180/?player=0`
+
+如果放在 VM，把 `localhost` 換成 VM 外部 IP：
+
+```text
+http://VM外部IP:5173/?role=host
+http://VM外部IP:5180/?role=host
+```
+
+防火牆需要同時開 TCP `5173` 和 `5180`。
+
+## 共享礦場競技
 
 四人共享礦場版黃金礦工本地原型。
 
@@ -143,3 +174,45 @@ Server 會自動使用 Koyeb 提供的 `PORT`。
 - Miner sprite: OpenGameArt `Dwarves`, b_o / Andrettin, CC-BY-SA 3.0 or GPL 2.0.
 - Claw/hook: OpenGameArt `Grappling Hook`, azureguy, CC0.
 - Current miner image and claw crop: user-provided local reference files in `/Users/kille/Downloads`.
+
+## 四人共享海域捕魚競技
+
+玩家在船上操作左右擺動大炮，按 Space 發射魚網捕魚。四位玩家共享同一批魚群，由 server 權威判定命中和分數。
+
+啟動：
+
+```bash
+cd fishing-game
+node server.js
+```
+
+預設 port 是 `5180`。
+
+- Host：`http://localhost:5180/?role=host`
+- Player 1：`http://localhost:5180/?player=0`
+- Player 2：`http://localhost:5180/?player=1`
+- Player 3：`http://localhost:5180/?player=2`
+- Player 4：`http://localhost:5180/?player=3`
+
+學校 LAN / VM 使用 terminal 顯示的 LAN 或外部 IP，例如：
+
+```text
+http://192.168.x.x:5180/?role=host
+http://192.168.x.x:5180/?player=0
+```
+
+規則：
+
+- 限時 3 分鐘。
+- 小魚 100 分。
+- 中魚 250 分。
+- 大鱼 500 分。
+- 稀有金魚 800 分。
+- 畫面保持較多魚，魚群會持續補生。
+- Player 頁只能控制自己。
+- Host 只觀戰和重開。
+
+釣魚遊戲素材：
+
+- `fishing-game/assets/generated-fishing-assets.png`：生成的寫實風釣魚素材參考圖，包含不同顏色船、魚網、魚類和捕魚大炮。
+- 實際遊戲畫面使用 Canvas 繪製高對比船、魚網和魚類，確保不同電腦不需要額外下載素材也能穩定顯示。
