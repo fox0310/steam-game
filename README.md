@@ -29,6 +29,20 @@ http://VM外部IP:5180/?role=host
 
 防火牆需要同時開 TCP `5173` 和 `5180`。
 
+VM 更新並重開：
+
+```bash
+cd ~/steam-game
+git pull
+pkill -f "[n]ode server.js" || true
+pkill -f "[n]ode fishing-game/server.js" || true
+nohup npm run start:all > game.log 2>&1 &
+sleep 2
+cat game.log
+```
+
+如果 `cat game.log` 沒有顯示 `Local: http://localhost:5173` 和 `Fishing game local: http://localhost:5180`，代表 server 沒有成功開啟。
+
 ## 共享礦場競技
 
 四人共享礦場版黃金礦工本地原型。
