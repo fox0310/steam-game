@@ -40,3 +40,7 @@ npm run start:all
 - 釣魚：`http://localhost:5180/?role=host`
 
 放到 VM 時把 `localhost` 換成 VM 外部 IP，並開放 TCP `5173` 和 `5180`。
+
+## 素材
+
+- 船：Kenney Pirate Pack，CC0，檔案在 `assets/boats/`。

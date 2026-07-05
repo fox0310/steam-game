@@ -9,6 +9,8 @@ const names = ["Player 1", "Player 2", "Player 3", "Player 4"];
 const imgs = {};
 let view = "host", start = performance.now(), last = start, over = false;
 let audioCtx = null, musicTimer = null;
+const lastTargets = new Array(4).fill(null);
+const lastStates = new Array(4).fill("swing");
 const duration = 180;
 const goldTarget = 12;
 
@@ -40,6 +42,7 @@ loadHostLinks();
 function fire(p) {
   if (online) return ws.send(JSON.stringify({ type: "fire", player: playerId }));
   if (over || p.state !== "swing") return;
+  playEffect("fire");
   p.state = "out";
   p.target = null;
 }
@@ -74,6 +77,7 @@ function update(dt, now) {
         hit.locked = true;
         p.target = hit;
         p.state = "back";
+        playEffect("catch");
       } else if (p.len > 620) p.state = "back";
     }
     if (p.state === "back" && p.len <= 46) {
@@ -81,6 +85,8 @@ function update(dt, now) {
       if (p.target) {
         p.target.alive = false;
         p.score += p.target.score;
+      } else {
+        playEffect("miss");
       }
       p.target = null;
       p.state = "cool";
@@ -118,6 +124,13 @@ function linkButton(label, url) {
 }
 
 function applyServerState() {
+  serverState.players.forEach((p, i) => {
+    const targetId = p.target?.id ?? null;
+    if (targetId !== null && lastTargets[i] === null && (view === "host" || Number(view) === i)) playEffect("catch");
+    if (lastStates[i] === "back" && p.state === "cool" && lastTargets[i] === null && (view === "host" || Number(view) === i)) playEffect("miss");
+    lastTargets[i] = targetId;
+    lastStates[i] = p.state;
+  });
   players.splice(0, players.length, ...serverState.players.map(p => ({ ...p })));
   golds.splice(0, golds.length, ...serverState.golds.map(g => ({ ...g })));
   over = serverState.over;
@@ -272,6 +285,7 @@ addEventListener("keydown", e => {
   startMusic();
   if (e.code !== "Space" || pageRole === "host") return;
   e.preventDefault();
+  if (online && !over && players[playerId]?.state === "swing") playEffect("fire");
   online ? ws.send(JSON.stringify({ type: "fire", player: playerId })) : fire(players[playerId]);
 });
 addEventListener("pointerdown", startMusic, { once: true });
@@ -298,6 +312,23 @@ function startMusic() {
   musicTimer = setInterval(play, 180);
 }
 
+function playEffect(kind) {
+  if (!audioCtx) audioCtx = new AudioContext();
+  const t = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = kind === "catch" ? "triangle" : "sawtooth";
+  osc.frequency.setValueAtTime(kind === "catch" ? 740 : kind === "miss" ? 150 : 180, t);
+  if (kind === "catch") osc.frequency.exponentialRampToValueAtTime(1180, t + 0.08);
+  else if (kind === "miss") osc.frequency.exponentialRampToValueAtTime(70, t + 0.18);
+  else osc.frequency.exponentialRampToValueAtTime(90, t + 0.12);
+  gain.gain.setValueAtTime(kind === "catch" ? 0.13 : 0.09, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + (kind === "miss" ? 0.2 : kind === "catch" ? 0.16 : 0.13));
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(t);
+  osc.stop(t + (kind === "miss" ? 0.22 : 0.18));
+}
+
 window.__getDebugState = () => ({
   online, view, playerId, pageRole, music: !!musicTimer,
   remaining: serverState?.remaining ?? duration - (performance.now() - start) / 1000,
@@ -308,11 +339,15 @@ window.__runSelfTest = () => {
   console.assert(rank()[0].score >= rank()[3].score, "ranking sorts high score first");
   const p = players[0], old = p.state;
   const wasOnline = online;
+  const wasOver = over;
   online = false;
+  over = false;
   p.state = "swing"; fire(p);
   console.assert(p.state === "out", "fire moves swing to out");
+  console.assert(typeof playEffect === "function", "sound effects available");
   p.state = old;
   online = wasOnline;
+  over = wasOver;
   golds.forEach(g => g.alive = false);
   spawnGold();
   console.assert(golds.some(g => g.alive), "spawnGold creates live gold");

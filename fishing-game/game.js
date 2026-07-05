@@ -6,8 +6,15 @@ const wrap = document.querySelector(".wrap");
 const W = canvas.width, H = canvas.height;
 const colors = ["#f05d5e", "#4da3ff", "#54d17a", "#ffd23f"];
 const names = ["Player 1", "Player 2", "Player 3", "Player 4"];
+const boatImgs = ["red", "blue", "green", "yellow"].map(name => {
+  const img = new Image();
+  img.src = `assets/boats/boat-${name}.png`;
+  return img;
+});
 let view = "host", start = performance.now(), last = start, over = false;
 let online = false, serverState = null, ws = null, audioCtx = null, musicTimer = null;
+const lastTargets = new Array(4).fill(null);
+const lastStates = new Array(4).fill("swing");
 const duration = 180, fishTarget = 32;
 const params = new URLSearchParams(location.search);
 const playerId = params.has("player") ? Math.max(0, Math.min(3, Number(params.get("player")) || 0)) : 0;
@@ -26,6 +33,7 @@ loadHostLinks();
 function fire(p) {
   if (online) return ws.send(JSON.stringify({ type: "fire", player: playerId }));
   if (over || p.state !== "swing") return;
+  playEffect("fire");
   p.state = "out";
   p.target = null;
 }
@@ -71,6 +79,7 @@ function updatePlayer(p, i, dt, now) {
       hit.locked = true;
       p.target = hit;
       p.state = "back";
+      playEffect("catch");
     } else if (p.len > 590) p.state = "back";
   }
   if (p.state === "back" && p.len <= 52) {
@@ -78,6 +87,8 @@ function updatePlayer(p, i, dt, now) {
     if (p.target) {
       p.target.alive = false;
       p.score += p.target.score;
+    } else {
+      playEffect("miss");
     }
     p.target = null;
     p.state = "cool";
@@ -114,6 +125,13 @@ function linkButton(label, url) {
 }
 
 function applyServerState() {
+  serverState.players.forEach((p, i) => {
+    const targetId = p.target?.id ?? null;
+    if (targetId !== null && lastTargets[i] === null && (view === "host" || Number(view) === i)) playEffect("catch");
+    if (lastStates[i] === "back" && p.state === "cool" && lastTargets[i] === null && (view === "host" || Number(view) === i)) playEffect("miss");
+    lastTargets[i] = targetId;
+    lastStates[i] = p.state;
+  });
   players.splice(0, players.length, ...serverState.players.map(p => ({ ...p })));
   fishes.splice(0, fishes.length, ...serverState.fishes.map(f => ({ ...f })));
   over = serverState.over;
@@ -166,7 +184,7 @@ function drawSea() {
 
 function drawPlayer(p) {
   const tip = netTip(p);
-  drawBoat(p.x, p.y, p.color);
+  drawBoat(p.x, p.y, p.color, players.indexOf(p));
   ctx.strokeStyle = p.color;
   ctx.lineWidth = 5;
   ctx.beginPath();
@@ -177,26 +195,23 @@ function drawPlayer(p) {
   if (p.target) drawFish({ ...p.target, x: tip.x, y: tip.y, r: p.target.r * 0.78 });
 }
 
-function drawBoat(x, y, color) {
+function drawBoat(x, y, color, index) {
+  const img = boatImgs[index] || boatImgs[0];
   ctx.save();
   ctx.translate(x, y);
-  ctx.fillStyle = "#6d3f20";
-  ctx.beginPath();
-  ctx.moveTo(-74, 12); ctx.lineTo(74, 12); ctx.lineTo(48, 58); ctx.lineTo(-48, 58); ctx.closePath();
-  ctx.fill();
+  if (img.complete) ctx.drawImage(img, -50, -58, 100, 171);
+  else {
+    ctx.fillStyle = "#6d3f20";
+    ctx.beginPath();
+    ctx.moveTo(-74, 12); ctx.lineTo(74, 12); ctx.lineTo(48, 58); ctx.lineTo(-48, 58); ctx.closePath();
+    ctx.fill();
+  }
   ctx.fillStyle = color;
   ctx.globalAlpha = 0.9;
-  ctx.fillRect(-63, 18, 126, 24);
+  ctx.fillRect(-38, -13, 76, 10);
   ctx.globalAlpha = 1;
-  ctx.fillStyle = "#d7e8e8";
-  ctx.fillRect(-32, -14, 64, 30);
-  ctx.fillStyle = "#17252d";
-  ctx.fillRect(-21, -7, 16, 12);
-  ctx.fillRect(6, -7, 16, 12);
   ctx.fillStyle = "#20272d";
-  ctx.beginPath();
-  ctx.arc(0, 42, 16, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.beginPath(); ctx.arc(0, 55, 14, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
 }
 
@@ -297,6 +312,7 @@ addEventListener("keydown", e => {
   startMusic();
   if (e.code !== "Space" || pageRole === "host") return;
   e.preventDefault();
+  if (online && !over && players[playerId]?.state === "swing") playEffect("fire");
   online ? ws.send(JSON.stringify({ type: "fire", player: playerId })) : fire(players[playerId]);
 });
 addEventListener("pointerdown", startMusic, { once: true });
@@ -323,11 +339,35 @@ function startMusic() {
   musicTimer = setInterval(play, 190);
 }
 
+function playEffect(kind) {
+  if (!audioCtx) audioCtx = new AudioContext();
+  const t = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = kind === "catch" ? "triangle" : "sawtooth";
+  osc.frequency.setValueAtTime(kind === "catch" ? 660 : kind === "miss" ? 140 : 220, t);
+  if (kind === "catch") osc.frequency.exponentialRampToValueAtTime(1040, t + 0.08);
+  else if (kind === "miss") osc.frequency.exponentialRampToValueAtTime(65, t + 0.18);
+  else osc.frequency.exponentialRampToValueAtTime(110, t + 0.12);
+  gain.gain.setValueAtTime(kind === "catch" ? 0.13 : 0.09, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + (kind === "miss" ? 0.2 : kind === "catch" ? 0.16 : 0.13));
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(t);
+  osc.stop(t + (kind === "miss" ? 0.22 : 0.18));
+}
+
 window.__getDebugState = () => ({ online, view, playerId, pageRole, fish: fishes.filter(f => f.alive).length, players: players.map(p => ({ state: p.state, score: p.score })) });
 window.__runSelfTest = () => {
   const p = players[0], old = p.state;
+  const wasOnline = online;
+  const wasOver = over;
+  online = false;
+  over = false;
   p.state = "swing"; fire(p);
   console.assert(p.state === "out", "Space fires net");
+  console.assert(typeof playEffect === "function", "sound effects available");
   p.state = old;
+  online = wasOnline;
+  over = wasOver;
   console.assert(fishes.length >= fishTarget, "many fish exist");
 };
