@@ -32,7 +32,8 @@ function resetGame() {
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   if (url.pathname === "/api/host") {
-    const base = req.headers.host?.includes("localhost") ? lanUrls()[0] || `http://localhost:${port}` : `${req.headers["x-forwarded-proto"] || "http"}://${req.headers.host}`;
+    const prefix = req.headers["x-forwarded-prefix"] || "";
+    const base = req.headers.host?.includes("localhost") ? lanUrls()[0] || `http://localhost:${port}` : `${req.headers["x-forwarded-proto"] || "http"}://${req.headers["x-forwarded-host"] || req.headers.host}${prefix}`;
     res.writeHead(200, { "content-type": "application/json" });
     return res.end(JSON.stringify({ base, urls: makeUrls(base) }));
   }

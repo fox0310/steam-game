@@ -19,6 +19,7 @@ const duration = 180, fishTarget = 32;
 const params = new URLSearchParams(location.search);
 const playerId = params.has("player") ? Math.max(0, Math.min(3, Number(params.get("player")) || 0)) : 0;
 const pageRole = params.get("role") === "host" ? "host" : (params.has("player") ? "player" : "local");
+const appPrefix = location.pathname.startsWith("/fishing") ? "/fishing" : "";
 if (params.has("player")) view = String(playerId);
 
 const players = names.map((name, i) => ({
@@ -98,7 +99,7 @@ function updatePlayer(p, i, dt, now) {
 
 function connect() {
   if (!location.protocol.startsWith("http")) return;
-  ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}`);
+  ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}${appPrefix}`);
   ws.onopen = () => ws.send(JSON.stringify({ type: "join", role: pageRole, player: pageRole === "player" ? playerId : null }));
   ws.onmessage = event => {
     const msg = JSON.parse(event.data);
@@ -113,7 +114,7 @@ function connect() {
 async function loadHostLinks() {
   if (pageRole !== "host" || !location.protocol.startsWith("http")) return;
   try {
-    const res = await fetch("/api/host");
+    const res = await fetch(`${appPrefix}/api/host`);
     const data = await res.json();
     hostLinks.style.display = "flex";
     hostLinks.innerHTML = `<strong>連線網址：</strong>${linkButton("Host", data.urls.host)}${data.urls.players.map((url, i) => linkButton(`P${i + 1}`, url)).join("")}`;
