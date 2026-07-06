@@ -4,7 +4,10 @@ const net = require("net");
 const port = Number(process.env.PORT || 80);
 const routes = {
   "/gold": { host: "127.0.0.1", port: 5173 },
-  "/fishing": { host: "127.0.0.1", port: 5180 }
+  "/fishing": { host: "127.0.0.1", port: 5180 },
+  "/rocket": { host: "127.0.0.1", port: 5190, mount: "/rocket-game" },
+  "/rocket-game": { host: "127.0.0.1", port: 5190, keepPath: true },
+  "/node_modules": { host: "127.0.0.1", port: 5190, keepPath: true }
 };
 
 const server = http.createServer((req, res) => {
@@ -33,10 +36,19 @@ server.on("upgrade", (req, socket, head) => {
 });
 
 function routeFor(url) {
-  const path = new URL(url, "http://gateway").pathname;
+  const parsed = new URL(url, "http://gateway");
+  const path = parsed.pathname;
   const prefix = Object.keys(routes).find(p => path === p || path.startsWith(`${p}/`));
   if (!prefix) return null;
-  return { prefix, target: routes[prefix], path: path.slice(prefix.length) + new URL(url, "http://gateway").search };
+  const target = routes[prefix];
+  return { prefix, target, path: targetPath(target, prefix, path, parsed.search) };
+}
+
+function targetPath(target, prefix, path, search) {
+  if (target.keepPath) return path + search;
+  if (!target.mount) return path.slice(prefix.length) + search;
+  const suffix = path.slice(prefix.length);
+  return `${target.mount}${suffix === "" || suffix === "/" ? "/index.html" : suffix}${search}`;
 }
 
 function proxyHttp(req, res, route) {
@@ -71,6 +83,7 @@ function landing(_req, res) {
   <h1>School Games</h1>
   <p><a href="/gold/?role=host">掘金遊戲 Host</a></p>
   <p><a href="/fishing/?role=host">釣魚遊戲 Host</a></p>
+  <p><a href="/rocket/">星空火箭升空</a></p>
 </main>`);
 }
 
@@ -78,4 +91,5 @@ server.listen(port, "0.0.0.0", () => {
   console.log(`Gateway: http://0.0.0.0:${port}`);
   console.log("Gold: /gold/");
   console.log("Fishing: /fishing/");
+  console.log("Rocket: /rocket/");
 });

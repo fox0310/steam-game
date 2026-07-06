@@ -1,0 +1,8 @@
+Rocket Game Asset Sources
+
+- sky-day.png: Seamless Sky Backgrounds by Screaming Brain Studios, OpenGameArt, CC0. Source: https://opengameart.org/content/seamless-sky-backgrounds
+- sky-space.png: Seamless Space Backgrounds by Screaming Brain Studios, itch.io, CC0/Public Domain. Source: https://screamingbrainstudios.itch.io/seamless-space-backgrounds
+- mountains-quaternius.glb: Mountains by Quaternius, Poly Pizza, Public Domain (CC0). Source: https://poly.pizza/m/w9VBrh7Nz0
+- tree_pineTallA.glb / tree_default.glb / rock_largeA.glb / grass_large.glb: Nature Kit by Kenney, redistributed as Nature Kit GLB Pack by Eclair Assets, Creative Commons CC0. Source: https://eclair-assets.itch.io/nature-kit-glb-pack-329-free-cc0-3d-models
+- long-march-5-rocket.glb: "Long March 5 Rocket" by AllThingsSpace (@sunnychen753), Sketchfab, CC BY 4.0. Source: https://sketchfab.com/3d-models/long-march-5-rocket-de59af6a151540f38ae352880c4c3be0
+- proton-rocket-launchpad.glb: "Proton Rocket launchpad" by Soviet Model Magic (@mckadefasel), Sketchfab, CC BY 4.0. Source: https://sketchfab.com/3d-models/proton-rocket-launchpad-a927f841e41b4ed1b067397332f1a2f8

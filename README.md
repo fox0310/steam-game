@@ -1,47 +1,70 @@
 # Steam Game
 
-這個 repo 目前包含兩個四人聯網 Canvas 遊戲：
+這個 repo 目前包含三個課堂遊戲：
 
 - `.`：共享礦場競技
 - `fishing-game/`：四人共享海域捕魚競技
+- `rocket-game/`：低組學生用空白鍵或拍制控制的 3D 星空火箭升空
 
-## 同時運行兩隻遊戲
+## 公開網址
 
-同一部電腦 / VM 下載這個 repo 後，可以同時開掘金和釣魚，兩隻遊戲用不同 port，所以不會互相覆蓋。
+VM 對外只需要開標準 HTTP `80` port，學校 Wi-Fi 較容易通過。
+
+把 `VM外部IP` 換成 Google Cloud 顯示的 External IP：
+
+網址：
+
+- 首頁：`http://VM外部IP/`
+- 掘金 Host：`http://VM外部IP/gold/?role=host`
+- 掘金 Player：`http://VM外部IP/gold/?player=0`
+- 釣魚 Host：`http://VM外部IP/fishing/?role=host`
+- 釣魚 Player：`http://VM外部IP/fishing/?player=0`
+- 火箭：`http://VM外部IP/rocket/`
+
+## VM 長期運行
+
+第一次部署或更新後，在 VM 執行：
 
 ```bash
-npm run start:all
+cd ~/steam-game
+git pull origin main
+./scripts/install-vm-service.sh
+```
+
+之後 VM 重開時，`steam-games.service` 會自動啟動三個後端和 `80` port gateway。
+
+本機開發仍可用內部 port：
+
+- 掘金：`http://localhost:5173/?role=host`
+- 釣魚：`http://localhost:5180/?role=host`
+- 火箭：`http://localhost:5190/`
+
+## 星空火箭升空
+
+低組學生單鍵 3D 火箭遊戲。學生按住空白鍵或外接拍制時，先出現 `3、2、1、發射` 倒數和音效，然後火箭由陸地升空；鬆開時火箭停止升空；高度到 100% 後出現獎勵畫面。
+
+啟動：
+
+```bash
+npm run start:rocket
 ```
 
 網址：
 
-- 掘金 Host：`http://localhost:5173/?role=host`
-- 掘金 Player：`http://localhost:5173/?player=0`
-- 釣魚 Host：`http://localhost:5180/?role=host`
-- 釣魚 Player：`http://localhost:5180/?player=0`
-
-如果放在 VM，把 `localhost` 換成 VM 外部 IP：
-
 ```text
-http://VM外部IP:5173/?role=host
-http://VM外部IP:5180/?role=host
+http://localhost:5190
 ```
 
-防火牆需要同時開 TCP `5173` 和 `5180`。
+操作：
 
-VM 更新並重開：
-
-```bash
-cd ~/steam-game
-git pull
-pkill -f "[n]ode server.js" || true
-pkill -f "[n]ode fishing-game/server.js" || true
-nohup npm run start:all > game.log 2>&1 &
-sleep 2
-cat game.log
-```
-
-如果 `cat game.log` 沒有顯示 `Local: http://localhost:5173` 和 `Fishing game local: http://localhost:5180`，代表 server 沒有成功開啟。
+- 按住 Space / 外接拍制：升空。
+- 鬆開：停止升空。
+- 首次按下會播放倒數發射音效。
+- 背景會由陸地、山和升空台逐漸轉成太空星空。
+- 圖形使用 Three.js 3D 場景，已加入天空、太空星空、山形、自然物件、長征五號火箭及火箭升空台 3D 素材。
+- 到達 100%：顯示獎勵畫面。
+- 獎勵畫面可按「再玩一次」重開。
+- 畫面也有大型「按住升空」按鈕，供觸控測試。
 
 ## 共享礦場競技
 
@@ -188,6 +211,22 @@ Server 會自動使用 Koyeb 提供的 `PORT`。
 - Miner sprite: OpenGameArt `Dwarves`, b_o / Andrettin, CC-BY-SA 3.0 or GPL 2.0.
 - Claw/hook: OpenGameArt `Grappling Hook`, azureguy, CC0.
 - Current miner image and claw crop: user-provided local reference files in `/Users/kille/Downloads`.
+
+### 火箭遊戲素材
+
+已放入 `rocket-game/assets/`：
+
+- Day sky: OpenGameArt `Seamless Sky Backgrounds`, Screaming Brain Studios, CC0.
+- Space sky: itch.io `Seamless Space Backgrounds`, Screaming Brain Studios, CC0/Public Domain.
+- Mountains: Poly Pizza `Mountains`, Quaternius, CC0.
+- Nature props: `Nature Kit GLB Pack`, Kenney / Eclair Assets redistribution, CC0.
+
+已下載並放入 `rocket-game/assets/models/`：
+
+- Long March 5 Rocket: Sketchfab, AllThingsSpace (@sunnychen753), CC BY 4.0。
+- Proton Rocket Launchpad: Sketchfab, Soviet Model Magic (@mckadefasel), CC BY 4.0。
+
+完整來源和署名記錄在 `rocket-game/assets/licenses/ASSET-SOURCES.txt`。
 
 ## 四人共享海域捕魚競技
 

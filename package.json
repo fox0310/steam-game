@@ -6,9 +6,18 @@
     "start": "node server.js",
     "start:gold": "node server.js",
     "start:fishing": "node fishing-game/server.js",
-    "start:all": "sh -c 'node server.js & node fishing-game/server.js & wait'"
+    "start:rocket": "node rocket-game/server.js",
+    "start:all": "sh -c 'PORT=5173 node server.js & PORT=5180 node fishing-game/server.js & PORT=5190 node rocket-game/server.js & wait'",
+    "test:rocket": "node rocket-game/self-check.mjs",
+    "playtest:rocket": "playwright test rocket-game/playtest.spec.js --browser=chromium --reporter=line"
   },
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "three": "^0.184.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.0"
   }
 }

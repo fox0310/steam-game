@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>星空火箭升空</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #050816;
+      color: #f7fbff;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #app {
+      position: fixed;
+      inset: 0;
+    }
+    .hud {
+      position: fixed;
+      inset: 16px 16px auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .panel {
+      min-width: 148px;
+      border: 1px solid rgba(179, 224, 255, .34);
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: rgba(5, 12, 28, .68);
+      backdrop-filter: blur(8px);
+    }
+    .label {
+      display: block;
+      color: #b9d9ff;
+      font-size: 14px;
+    }
+    #altitude {
+      display: block;
+      margin-top: 2px;
+      font-size: 30px;
+      font-weight: 800;
+      line-height: 1;
+    }
+    #status {
+      color: #ecf7ff;
+      font-size: 17px;
+      font-weight: 700;
+      text-align: right;
+    }
+    .controls {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      display: flex;
+      gap: 12px;
+      transform: translateX(-50%);
+      z-index: 4;
+    }
+    button {
+      min-width: 118px;
+      border: 1px solid rgba(255,255,255,.28);
+      border-radius: 8px;
+      padding: 14px 18px;
+      color: #07111f;
+      background: #9ee7ff;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      touch-action: none;
+    }
+    #lift-button {
+      min-width: min(76vw, 360px);
+      min-height: 82px;
+      background: #ffcf4a;
+    }
+    #lift-button.active {
+      background: #ff7a18;
+      color: #fff;
+      transform: translateY(2px);
+    }
+    #reset-button {
+      background: rgba(255,255,255,.9);
+    }
+    .reward {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(2, 6, 18, .68);
+      z-index: 3;
+    }
+    .reward-card {
+      width: min(520px, 92vw);
+      border: 1px solid rgba(255,255,255,.28);
+      border-radius: 8px;
+      padding: 28px;
+      text-align: center;
+      background: rgba(6, 20, 48, .9);
+      box-shadow: 0 16px 60px rgba(0,0,0,.42);
+    }
+    .reward h1 {
+      margin: 0 0 12px;
+      color: #ffdf5d;
+      font-size: clamp(34px, 7vw, 56px);
+    }
+    .reward p {
+      margin: 0;
+      color: #d7eeff;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .reward button {
+      margin-top: 22px;
+      background: #ffdf5d;
+    }
+    .countdown {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      z-index: 5;
+      pointer-events: none;
+      color: #ffdf5d;
+      font-size: clamp(76px, 18vw, 190px);
+      font-weight: 900;
+      text-shadow: 0 8px 36px rgba(0,0,0,.55);
+    }
+    [hidden] { display: none !important; }
+    @media (max-width: 640px) {
+      .hud { inset: 10px 10px auto 10px; }
+      .panel { min-width: 118px; padding: 8px 10px; }
+      #altitude { font-size: 25px; }
+      #status { font-size: 15px; }
+      .controls { width: calc(100vw - 20px); bottom: 12px; }
+      #lift-button { min-width: 0; flex: 1; }
+      #reset-button { min-width: 86px; }
+    }
+  </style>
+</head>
+<body>
+  <main id="app" aria-label="星空火箭升空 3D 遊戲"></main>
+  <section class="hud" aria-live="polite">
+    <div class="panel">
+      <span class="label">高度</span>
+      <span id="altitude">0%</span>
+    </div>
+    <div id="status">按住空白鍵或拍制開始</div>
+  </section>
+  <section class="controls">
+    <button id="lift-button" type="button">按住升空</button>
+    <button id="reset-button" type="button">重開</button>
+  </section>
+  <section id="reward" class="reward" hidden>
+    <div class="reward-card">
+      <h1>成功到達太空</h1>
+      <p>火箭完成升空任務</p>
+      <button id="reward-reset-button" type="button">再玩一次</button>
+    </div>
+  </section>
+  <div id="countdown" class="countdown" hidden>3</div>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/node_modules/three/build/three.module.js"
+      }
+    }
+  </script>
+  <script type="module" src="/rocket-game/game.js"></script>
+</body>
+</html>
