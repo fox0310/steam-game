@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   DEFAULT_SETTINGS,
   SOUND_OPTIONS,
@@ -75,6 +76,15 @@ function testPauseRequiresFreshExitCycle() {
   assert.equal(trigger.observeFace(false, 3_000).ready, true);
 }
 
+function testManualTriggerReturnsToReady() {
+  const trigger = createTriggerState();
+  trigger.start();
+  assert.equal(trigger.forceTrigger(0).triggered, true);
+  assert.equal(trigger.state, "playing");
+  trigger.finishPlaying(7_000);
+  assert.equal(trigger.state, "ready");
+}
+
 function testSettingsValidation() {
   assert.deepEqual(parseStoredSettings(null), DEFAULT_SETTINGS);
   assert.deepEqual(parseStoredSettings("not-json"), DEFAULT_SETTINGS);
@@ -125,12 +135,24 @@ function testSoundOptionsAreCantoneseOnly() {
   );
 }
 
+function testApprovedUiStructure() {
+  const html = readFileSync(new URL("./index.html", import.meta.url), "utf8");
+  assert.equal((html.match(/data-sound=/g) || []).length, 5);
+  assert.equal(html.includes("data-sound=\"music\""), true);
+  assert.equal(html.includes("裝置編號"), false);
+  assert.equal(html.includes("普通話"), false);
+  assert.equal(html.includes("id=\"btn-start\""), true);
+  assert.equal(html.includes("id=\"btn-share\""), true);
+}
+
 testStableFaceTriggersOnce();
 testBriefFaceDoesNotTrigger();
 testExitMustLastTwoSeconds();
 testExitDuringPlaybackCanResetAtFinish();
 testPauseRequiresFreshExitCycle();
+testManualTriggerReturnsToReady();
 testSettingsValidation();
 testSoundOptionsAreCantoneseOnly();
+testApprovedUiStructure();
 
-console.log("face-trigger self-check: 7 checks passed");
+console.log("face-trigger self-check: 9 checks passed");

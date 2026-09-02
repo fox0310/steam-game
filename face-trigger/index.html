@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-Hant-HK">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="theme-color" content="#071c1c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="人臉音樂觸發器">
+    <title>人臉音樂觸發器</title>
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./assets/app-icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="./assets/app-icon.svg">
+    <link rel="stylesheet" href="./styles.css">
+    <script defer src="./vendor/qrcode.min.js"></script>
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="重新載入人臉音樂觸發器">
+        <span class="brand-mark" aria-hidden="true">♫</span>
+        <span><strong>人臉音樂觸發器</strong><small>每部 iPad 獨立運行</small></span>
+      </a>
+      <nav aria-label="頁面工具">
+        <button id="btn-share" class="button compact" type="button">分享 QR</button>
+        <button id="btn-fullscreen" class="icon-button" type="button" aria-label="切換全螢幕">⛶</button>
+        <button id="btn-settings" class="icon-button" type="button" aria-label="開啟設定">⚙</button>
+      </nav>
+    </header>
+
+    <main class="workspace">
+      <section class="camera-card" aria-label="相機感應畫面">
+        <video id="camera" autoplay muted playsinline></video>
+        <canvas id="face-overlay" aria-hidden="true"></canvas>
+
+        <div id="status-badge" class="status-badge" data-state="idle" role="status" aria-live="polite">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="status-text">等待啟動</span>
+        </div>
+
+        <div id="countdown" class="countdown" hidden>
+          <span aria-hidden="true">♫</span><strong id="countdown-text">7s</strong>
+        </div>
+
+        <div id="audio-wave" class="audio-wave" aria-hidden="true" hidden>
+          <i></i><i></i><i></i><i></i><i></i>
+        </div>
+
+        <div id="start-overlay" class="start-overlay">
+          <div class="start-symbol" aria-hidden="true">▶</div>
+          <h1>啟動感應器</h1>
+          <p>按一下以允許相機及開啟聲音。相機畫面只在這部 iPad 處理。</p>
+          <button id="btn-start" class="button primary large" type="button">立即啟動</button>
+          <p id="start-error" class="error-message" role="alert" hidden></p>
+        </div>
+      </section>
+
+      <aside class="control-stack" aria-label="控制面板">
+        <section class="panel">
+          <div class="panel-heading">
+            <div><span class="eyebrow">感應控制</span><h2>選擇播放內容</h2></div>
+            <span id="selected-label" class="selected-label">早晨</span>
+          </div>
+
+          <div class="sound-grid" aria-label="播放內容">
+            <button class="sound-button selected" type="button" data-sound="morning" aria-pressed="true"><span>🌅</span>早晨</button>
+            <button class="sound-button" type="button" data-sound="afternoon" aria-pressed="false"><span>☀️</span>午安</button>
+            <button class="sound-button" type="button" data-sound="hello" aria-pressed="false"><span>👋</span>你好</button>
+            <button class="sound-button" type="button" data-sound="class-g" aria-pressed="false"><span>🎒</span>G班</button>
+            <button class="sound-button music" type="button" data-sound="music" aria-pressed="false"><span>🎵</span>輕快音樂</button>
+          </div>
+
+          <div class="primary-controls">
+            <button id="btn-toggle" class="button secondary" type="button" disabled>暫停感應</button>
+            <button id="btn-stop" class="button danger" type="button" disabled>中斷播放</button>
+          </div>
+          <button id="btn-manual" class="button ghost" type="button" disabled>手動測試播放</button>
+
+          <label class="range-row" for="volume">
+            <span>音量</span>
+            <input id="volume" type="range" min="0" max="1" step="0.05" value="1">
+            <output id="volume-output" for="volume">100%</output>
+          </label>
+        </section>
+
+        <section class="panel stats" aria-label="運行資訊">
+          <div><span>累計觸發</span><strong id="trigger-count">0</strong></div>
+          <div><span>播放時長</span><strong id="duration-stat">7s</strong></div>
+          <div><span>離線狀態</span><strong id="offline-status">準備中</strong></div>
+        </section>
+      </aside>
+    </main>
+
+    <footer>相機畫面不會上傳、錄製或保存。</footer>
+
+    <dialog id="settings-dialog" class="modal">
+      <form method="dialog" class="modal-card">
+        <div class="modal-heading"><h2>感應設定</h2><button class="icon-button" value="cancel" aria-label="關閉設定">×</button></div>
+        <label class="field">播放時長 <output id="duration-output" for="duration">7 秒</output>
+          <input id="duration" type="range" min="3" max="30" step="1" value="7">
+        </label>
+        <label class="field">人臉標記
+          <select id="visual-mode">
+            <option value="dot">感應點</option>
+            <option value="hud">科技準星</option>
+            <option value="box">人臉外框</option>
+            <option value="none">不顯示</option>
+          </select>
+        </label>
+        <fieldset class="field"><legend>鏡頭方向</legend>
+          <div class="segmented">
+            <button id="facing-user" type="button" aria-pressed="true">前置鏡頭</button>
+            <button id="facing-environment" type="button" aria-pressed="false">後置鏡頭</button>
+          </div>
+        </fieldset>
+        <button id="btn-save-settings" class="button primary" value="default">儲存設定</button>
+      </form>
+    </dialog>
+
+    <dialog id="share-dialog" class="modal">
+      <div class="modal-card share-card">
+        <div class="modal-heading"><h2>同一個 QR Code</h2><button id="btn-close-share" class="icon-button" type="button" aria-label="關閉 QR Code">×</button></div>
+        <p>五部 iPad 掃描後會各自獨立運行。</p>
+        <div id="qr-code" class="qr-code" aria-label="網頁 QR Code"></div>
+        <code id="share-url">https://fox0310.github.io/steam-game/</code>
+        <button id="btn-copy-url" class="button secondary" type="button">複製網址</button>
+      </div>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  </body>
+</html>

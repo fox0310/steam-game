@@ -139,6 +139,15 @@ export function createTriggerState({ armMs = 500, exitMs = 2_000 } = {}) {
       return result();
     },
 
+    forceTrigger(now) {
+      if (["idle", "playing", "paused", "error"].includes(state)) return result();
+      state = "playing";
+      facePresent = false;
+      armStartedAt = null;
+      absentStartedAt = now;
+      return result(true, false);
+    },
+
     pause() {
       state = "paused";
       armStartedAt = null;

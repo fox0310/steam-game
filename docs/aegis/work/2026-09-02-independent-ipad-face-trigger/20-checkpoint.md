@@ -1,10 +1,10 @@
 # Todo Checkpoint
 
-- Active task: Task 2，介面與音訊。
-- Current todo: 建立 semantic UI、粵語播放及原創音樂。
-- Completed: 設計規格、實作計劃、TaskStartSnapshot、Task 1 狀態機與設定。
-- Evidence: RED `ERR_MODULE_NOT_FOUND`；GREEN `face-trigger self-check: 7 checks passed`。
+- Active task: Task 3，本機 MediaPipe 與相機。
+- Current todo: vendor 固定 runtime，接駁相機 callback 與狀態機。
+- Completed: Task 1 狀態機與設定；Task 2 介面與音訊。
+- Evidence: Task 2 RED 缺 `forceTrigger`；GREEN self-check 9 項；瀏覽器完成音樂選擇、啟動、播放、計數及中斷。
 - Blockers: 無。
-- Next: 先加入設定／內容 UI assertions，再建立介面與音訊。
+- Next: 取得固定 MediaPipe 套件並加入相機／偵測 owner。
 - Resume hint: 從 Task 1 開始；不要修改現有三個遊戲或未追蹤 Obsidian 檔。
-- Drift check: intent、scope、baseline、compatibility、retirement、test obligations 均對齊；沒有新增 fallback 或 server；decision `continue`。
+- Drift check: UI 無裝置 ID、普通話、server 或遠端資料；現有遊戲未改；decision `continue`。
