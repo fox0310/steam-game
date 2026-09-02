@@ -3,7 +3,7 @@ export const SOUND_OPTIONS = Object.freeze([
   { id: "afternoon", label: "午安", kind: "speech", text: "午安", lang: "zh-HK", audio: "./assets/audio/afternoon.wav" },
   { id: "hello", label: "你好", kind: "speech", text: "你好", lang: "zh-HK", audio: "./assets/audio/hello.wav" },
   { id: "class-g", label: "G班", kind: "speech", text: "G班", lang: "zh-HK", audio: "./assets/audio/class-g.wav" },
-  { id: "music", label: "輕快音樂", kind: "music" },
+  { id: "music", label: "輕快音樂", kind: "music", audio: "./assets/audio/upbeat-22s.m4a" },
 ]);
 
 export const DEFAULT_SETTINGS = Object.freeze({
@@ -11,13 +11,15 @@ export const DEFAULT_SETTINGS = Object.freeze({
   volume: 1,
   duration: 7,
   facingMode: "user",
+  detectionMode: "face",
   visualMode: "dot",
   triggerCount: 0,
 });
 
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 const SOUND_IDS = new Set(SOUND_OPTIONS.map(({ id }) => id));
 const FACING_MODES = new Set(["user", "environment"]);
+const DETECTION_MODES = new Set(["face", "wave"]);
 const VISUAL_MODES = new Set(["dot", "hud", "box", "none"]);
 
 function defaults() {
@@ -35,6 +37,7 @@ function isValidSettings(value) {
     value.duration >= 3 &&
     value.duration <= 30 &&
     FACING_MODES.has(value.facingMode) &&
+    DETECTION_MODES.has(value.detectionMode) &&
     VISUAL_MODES.has(value.visualMode) &&
     Number.isInteger(value.triggerCount) &&
     value.triggerCount >= 0
@@ -46,10 +49,11 @@ export function parseStoredSettings(raw) {
 
   try {
     const parsed = JSON.parse(raw);
-    if (parsed.schemaVersion !== SCHEMA_VERSION || !isValidSettings(parsed.settings)) {
+    if (![1, SCHEMA_VERSION].includes(parsed.schemaVersion)) {
       return defaults();
     }
-    return { ...parsed.settings };
+    const migrated = { ...parsed.settings, detectionMode: parsed.settings?.detectionMode || "face" };
+    return isValidSettings(migrated) ? migrated : defaults();
   } catch {
     return defaults();
   }
@@ -60,7 +64,7 @@ export function serializeSettings(settings) {
   return JSON.stringify({ schemaVersion: SCHEMA_VERSION, settings: safeSettings });
 }
 
-export function createTriggerState({ armMs = 500, exitMs = 2_000 } = {}) {
+export function createTriggerState({ armMs = 500, exitMs = 500 } = {}) {
   let state = "idle";
   let facePresent = false;
   let armStartedAt = null;

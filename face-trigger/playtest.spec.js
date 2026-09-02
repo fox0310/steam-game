@@ -28,6 +28,18 @@ test("每部裝置的選擇保存在本機", async ({ page }) => {
   await expect(page.getByRole("button", { name: "輕快音樂" })).toHaveAttribute("aria-pressed", "true");
 });
 
+test("可在每部裝置獨立選擇人臉或揮手感應", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "開啟設定" }).click();
+  const mode = page.getByLabel("感應方式");
+  await expect(mode.locator("option")).toHaveCount(2);
+  await mode.selectOption("wave");
+  await page.getByRole("button", { name: "儲存設定" }).click();
+  await page.reload();
+  await page.getByRole("button", { name: "開啟設定" }).click();
+  await expect(page.getByLabel("感應方式")).toHaveValue("wave");
+});
+
 test("手機及 iPad 直向橫向沒有水平溢出", async ({ page }) => {
   for (const viewport of [
     { width: 320, height: 568 },
@@ -61,6 +73,29 @@ test("粵語內容使用內置音檔播放", async ({ page }) => {
   await expect.poll(() => page.evaluate(() => window.__audioBufferStarts)).toBeGreaterThan(0);
 });
 
+test("輕快音樂使用附件第 22 秒起的音訊片段", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.__musicBufferStarts = 0;
+    const originalStart = AudioBufferSourceNode.prototype.start;
+    AudioBufferSourceNode.prototype.start = function (...args) {
+      window.__musicBufferStarts += 1;
+      return originalStart.apply(this, args);
+    };
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: { getUserMedia: () => Promise.reject(new Error("測試拒絕相機")) },
+    });
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "輕快音樂" }).click();
+  await page.getByRole("button", { name: "立即啟動" }).click();
+  await page.getByRole("button", { name: "手動測試播放" }).click();
+  await expect.poll(() => page.evaluate(() => window.__musicBufferStarts)).toBeGreaterThan(0);
+  const response = await page.request.get("/assets/audio/upbeat-22s.m4a");
+  expect(response.ok()).toBe(true);
+  expect((await response.body()).byteLength).toBeGreaterThan(10_000);
+});
+
 test("本機人臉模型可以完成初始化", async ({ page }) => {
   await page.goto("/");
   const initialized = await page.evaluate(async () => {
@@ -70,6 +105,28 @@ test("本機人臉模型可以完成初始化", async ({ page }) => {
     model.setOptions({
       maxNumFaces: 1,
       refineLandmarks: false,
+      minDetectionConfidence: 0.55,
+      minTrackingConfidence: 0.55,
+    });
+    try {
+      await model.initialize();
+      return true;
+    } finally {
+      await model.close();
+    }
+  });
+  expect(initialized).toBe(true);
+});
+
+test("本機手部模型可以完成初始化", async ({ page }) => {
+  await page.goto("/");
+  const initialized = await page.evaluate(async () => {
+    const model = new window.Hands({
+      locateFile: (file) => `./vendor/hands/${file}`,
+    });
+    model.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 0,
       minDetectionConfidence: 0.55,
       minTrackingConfidence: 0.55,
     });

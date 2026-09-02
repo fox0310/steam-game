@@ -13,6 +13,7 @@
     <link rel="apple-touch-icon" href="./assets/app-icon.svg">
     <link rel="stylesheet" href="./styles.css">
     <script src="./vendor/face_mesh/face_mesh.js"></script>
+    <script src="./vendor/hands/hands.js"></script>
     <script defer src="./vendor/qrcode.min.js"></script>
     <script type="module" src="./app.js"></script>
   </head>
@@ -108,10 +109,16 @@
     <dialog id="settings-dialog" class="modal">
       <form method="dialog" class="modal-card">
         <div class="modal-heading"><h2>感應設定</h2><button class="icon-button" value="cancel" aria-label="關閉設定">×</button></div>
+        <label class="field">感應方式
+          <select id="detection-mode">
+            <option value="face">人臉</option>
+            <option value="wave">揮手</option>
+          </select>
+        </label>
         <label class="field">播放時長 <output id="duration-output" for="duration">7 秒</output>
           <input id="duration" type="range" min="3" max="30" step="1" value="7">
         </label>
-        <label class="field">人臉標記
+        <label class="field">感應標記
           <select id="visual-mode">
             <option value="dot">感應點</option>
             <option value="hud">科技準星</option>

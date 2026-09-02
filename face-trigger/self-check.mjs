@@ -36,7 +36,7 @@ function testBriefFaceDoesNotTrigger() {
   assert.equal(trigger.observeFace(true, 1_000).triggered, true);
 }
 
-function testExitMustLastTwoSeconds() {
+function testExitMustLastHalfSecond() {
   const trigger = createTriggerState();
   trigger.start();
   trigger.observeFace(true, 0);
@@ -44,9 +44,9 @@ function testExitMustLastTwoSeconds() {
   trigger.finishPlaying(1_000);
   trigger.observeFace(false, 1_100);
 
-  assert.equal(trigger.observeFace(false, 3_099).ready, false);
+  assert.equal(trigger.observeFace(false, 1_599).ready, false);
   assert.equal(trigger.state, "wait-for-exit");
-  assert.equal(trigger.observeFace(false, 3_100).ready, true);
+  assert.equal(trigger.observeFace(false, 1_600).ready, true);
   assert.equal(trigger.state, "ready");
 }
 
@@ -56,8 +56,8 @@ function testExitDuringPlaybackCanResetAtFinish() {
   trigger.observeFace(true, 0);
   trigger.observeFace(true, 500);
   trigger.observeFace(false, 1_000);
-  trigger.observeFace(false, 3_000);
-  trigger.finishPlaying(3_000);
+  trigger.observeFace(false, 1_500);
+  trigger.finishPlaying(1_600);
 
   assert.equal(trigger.state, "ready");
 }
@@ -72,8 +72,8 @@ function testPauseRequiresFreshExitCycle() {
   trigger.resume(1_000);
   assert.equal(trigger.state, "wait-for-exit");
   trigger.observeFace(false, 1_000);
-  assert.equal(trigger.observeFace(false, 2_999).ready, false);
-  assert.equal(trigger.observeFace(false, 3_000).ready, true);
+  assert.equal(trigger.observeFace(false, 1_499).ready, false);
+  assert.equal(trigger.observeFace(false, 1_500).ready, true);
 }
 
 function testManualTriggerReturnsToReady() {
@@ -87,6 +87,7 @@ function testManualTriggerReturnsToReady() {
 
 function testSettingsValidation() {
   assert.deepEqual(parseStoredSettings(null), DEFAULT_SETTINGS);
+  assert.equal(DEFAULT_SETTINGS.detectionMode, "face");
   assert.deepEqual(parseStoredSettings("not-json"), DEFAULT_SETTINGS);
   assert.deepEqual(
     parseStoredSettings(JSON.stringify({ schemaVersion: 99, settings: {} })),
@@ -105,6 +106,13 @@ function testSettingsValidation() {
   assert.equal(parsed.volume, 0.6);
   assert.equal(parsed.duration, 12);
   assert.equal(parsed.triggerCount, 4);
+  assert.equal(parsed.detectionMode, "face");
+
+  const waveSettings = serializeSettings({
+    ...DEFAULT_SETTINGS,
+    detectionMode: "wave",
+  });
+  assert.equal(parseStoredSettings(waveSettings).detectionMode, "wave");
 
   const invalid = parseStoredSettings(
     JSON.stringify({
@@ -120,6 +128,32 @@ function testSettingsValidation() {
     }),
   );
   assert.deepEqual(invalid, DEFAULT_SETTINGS);
+}
+
+async function testWaveRequiresHorizontalReversal() {
+  let createWaveDetector;
+  try {
+    ({ createWaveDetector } = await import("./gesture-state.js"));
+  } catch {}
+  assert.equal(typeof createWaveDetector, "function");
+
+  const stillHand = createWaveDetector();
+  assert.equal(stillHand.observe(0.5, 0), false);
+  assert.equal(stillHand.observe(0.51, 100), false);
+  assert.equal(stillHand.observe(0.49, 200), false);
+  assert.equal(stillHand.observe(0.5, 300), false);
+
+  const wavingHand = createWaveDetector();
+  assert.equal(wavingHand.observe(0.5, 0), false);
+  assert.equal(wavingHand.observe(0.62, 100), false);
+  assert.equal(wavingHand.observe(0.72, 200), false);
+  assert.equal(wavingHand.observe(0.6, 300), false);
+  assert.equal(wavingHand.observe(0.46, 400), true);
+
+  const expiredMotion = createWaveDetector();
+  expiredMotion.observe(0.5, 0);
+  expiredMotion.observe(0.72, 100);
+  assert.equal(expiredMotion.observe(0.46, 1_200), false);
 }
 
 function testSoundOptionsAreCantoneseOnly() {
@@ -183,15 +217,16 @@ function testDeploymentOwners() {
 
 testStableFaceTriggersOnce();
 testBriefFaceDoesNotTrigger();
-testExitMustLastTwoSeconds();
+testExitMustLastHalfSecond();
 testExitDuringPlaybackCanResetAtFinish();
 testPauseRequiresFreshExitCycle();
 testManualTriggerReturnsToReady();
 testSettingsValidation();
+await testWaveRequiresHorizontalReversal();
 testSoundOptionsAreCantoneseOnly();
 testApprovedUiStructure();
 testLocalFaceRuntimeWiring();
 testOfflinePwaOwners();
 testDeploymentOwners();
 
-console.log("face-trigger self-check: 12 checks passed");
+console.log("face-trigger self-check: 13 checks passed");

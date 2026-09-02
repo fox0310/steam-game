@@ -5,6 +5,7 @@ import {
   parseStoredSettings,
   serializeSettings,
 } from "./trigger-state.js";
+import { createWaveDetector } from "./gesture-state.js";
 
 const STORAGE_KEY = "face-trigger-settings";
 const CANONICAL_URL = "https://fox0310.github.io/steam-game/";
@@ -18,13 +19,15 @@ let playbackTimer;
 let countdownTimer;
 let toastTimer;
 let faceMesh;
+let hands;
 let cameraStream;
 let cameraStarted = false;
 let wakeLock;
 let frameRequest;
 let processingFrame = false;
 let audioLoadPromise;
-const speechBuffers = new Map();
+const audioBuffers = new Map();
+const waveDetector = createWaveDetector();
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -47,6 +50,7 @@ const elements = {
   selectedLabel: $("#selected-label"),
   duration: $("#duration"),
   durationOutput: $("#duration-output"),
+  detectionMode: $("#detection-mode"),
   visualMode: $("#visual-mode"),
   camera: $("#camera"),
   canvas: $("#face-overlay"),
@@ -92,6 +96,7 @@ function syncSettingsUi() {
   elements.duration.value = settings.duration;
   elements.durationOutput.value = `${settings.duration} 秒`;
   elements.durationStat.textContent = `${settings.duration}s`;
+  elements.detectionMode.value = settings.detectionMode;
   elements.visualMode.value = settings.visualMode;
   elements.count.textContent = settings.triggerCount;
   elements.camera.dataset.facing = settings.facingMode;
@@ -110,13 +115,13 @@ async function ensureAudioContext() {
   return audioContext;
 }
 
-function loadSpeechBuffers() {
+function loadAudioBuffers() {
   audioLoadPromise ||= Promise.all(
-    SOUND_OPTIONS.filter(({ kind }) => kind === "speech").map(async (sound) => {
+    SOUND_OPTIONS.filter(({ audio }) => audio).map(async (sound) => {
       const response = await fetch(sound.audio);
-      if (!response.ok) throw new Error(`粵語音檔載入失敗：${sound.label}`);
+      if (!response.ok) throw new Error(`音訊載入失敗：${sound.label}`);
       const buffer = await audioContext.decodeAudioData(await response.arrayBuffer());
-      speechBuffers.set(sound.id, buffer);
+      audioBuffers.set(sound.id, buffer);
     }),
   ).catch((error) => {
     audioLoadPromise = undefined;
@@ -153,38 +158,32 @@ function playChime() {
   });
 }
 
-function playSpeechBuffer(buffer) {
+function playAudioBuffer(buffer, delay = 0) {
   const source = audioContext.createBufferSource();
   const gain = audioContext.createGain();
   source.buffer = buffer;
   gain.gain.value = settings.volume;
   source.connect(gain).connect(audioContext.destination);
-  source.start(audioContext.currentTime + 0.22);
+  source.start(audioContext.currentTime + delay);
   rememberNode(source);
 }
 
 async function playCantonese(sound) {
   playChime();
   try {
-    await loadSpeechBuffers();
-    playSpeechBuffer(speechBuffers.get(sound.id));
+    await loadAudioBuffers();
+    playAudioBuffer(audioBuffers.get(sound.id), 0.22);
   } catch {
     showToast("粵語音檔未能載入；請重新連線後再試。");
   }
 }
 
-function playUpbeatMusic() {
-  const melody = [523.25, 659.25, 783.99, 659.25, 698.46, 880, 783.99, 1046.5];
-  const bass = [261.63, 349.23, 293.66, 392];
-  const start = audioContext.currentTime + 0.03;
-  const beat = 0.25;
-  const beats = Math.ceil(settings.duration / beat);
-  for (let index = 0; index < beats; index += 1) {
-    const when = start + index * beat;
-    scheduleTone(melody[index % melody.length], when, 0.2, 0.12 * settings.volume, "triangle");
-    if (index % 2 === 0) {
-      scheduleTone(bass[Math.floor(index / 4) % bass.length], when, 0.42, 0.07 * settings.volume, "sine");
-    }
+async function playMusic(sound) {
+  try {
+    await loadAudioBuffers();
+    playAudioBuffer(audioBuffers.get(sound.id));
+  } catch {
+    showToast("音樂未能載入；請重新連線後再試。");
   }
 }
 
@@ -218,7 +217,7 @@ async function beginPlayback() {
   elements.stop.disabled = false;
   setStatus("playing", `正在播放：${sound.label}`);
   startCountdown();
-  if (sound.kind === "music") playUpbeatMusic();
+  if (sound.kind === "music") await playMusic(sound);
   else await playCantonese(sound);
   clearTimeout(playbackTimer);
   playbackTimer = setTimeout(() => finishPlayback(), settings.duration * 1_000);
@@ -228,16 +227,19 @@ function finishPlayback(stoppedByUser = false) {
   clearTimeout(playbackTimer);
   clearInterval(countdownTimer);
   stopAudio();
+  waveDetector.reset();
   elements.countdown.hidden = true;
   elements.audioWave.hidden = true;
   elements.stop.disabled = true;
   const next = trigger.finishPlaying(performance.now());
-  const readyText = next.ready ? "等待人臉" : "等待人臉離開後再次感應";
+  const readyText = settings.detectionMode === "wave"
+    ? "等待揮手"
+    : next.ready ? "等待人臉" : "等待人臉離開後再次感應";
   setStatus(detecting ? "ready" : "paused", detecting ? readyText : "感應已暫停");
   if (stoppedByUser) showToast("已中斷播放");
 }
 
-function drawFace(landmarks) {
+function drawDetection(landmarks, focusIndex = 1) {
   const { canvas, camera } = elements;
   const context = canvas.getContext("2d");
   if (!camera.videoWidth || !camera.videoHeight) return;
@@ -250,7 +252,7 @@ function drawFace(landmarks) {
 
   const color = trigger.state === "playing" ? "#4de5b4" : "#6ed8ff";
   const points = landmarks.map((point) => ({ x: point.x * canvas.width, y: point.y * canvas.height }));
-  const nose = points[1];
+  const focus = points[focusIndex];
   context.save();
   context.strokeStyle = color;
   context.fillStyle = color;
@@ -259,16 +261,16 @@ function drawFace(landmarks) {
 
   if (settings.visualMode === "dot") {
     context.beginPath();
-    context.arc(nose.x, nose.y, 13, 0, Math.PI * 2);
+    context.arc(focus.x, focus.y, 13, 0, Math.PI * 2);
     context.fill();
   } else if (settings.visualMode === "hud") {
     context.lineWidth = 2.5;
     context.beginPath();
-    context.arc(nose.x, nose.y, 36, 0, Math.PI * 2);
-    context.moveTo(nose.x - 50, nose.y);
-    context.lineTo(nose.x + 50, nose.y);
-    context.moveTo(nose.x, nose.y - 50);
-    context.lineTo(nose.x, nose.y + 50);
+    context.arc(focus.x, focus.y, 36, 0, Math.PI * 2);
+    context.moveTo(focus.x - 50, focus.y);
+    context.lineTo(focus.x + 50, focus.y);
+    context.moveTo(focus.x, focus.y - 50);
+    context.lineTo(focus.x, focus.y + 50);
     context.stroke();
   } else if (settings.visualMode === "box") {
     const xs = points.map(({ x }) => x);
@@ -283,7 +285,7 @@ function drawFace(landmarks) {
 
 async function handleFaceResults(results) {
   const landmarks = results.multiFaceLandmarks?.[0];
-  drawFace(landmarks);
+  drawDetection(landmarks);
   if (!detecting) return;
 
   const observation = trigger.observeFace(Boolean(landmarks), performance.now());
@@ -294,7 +296,19 @@ async function handleFaceResults(results) {
   } else if (trigger.state === "ready") {
     setStatus("ready", "等待人臉");
   } else if (trigger.state === "wait-for-exit") {
-    setStatus("ready", "請離開鏡頭 2 秒");
+    setStatus("ready", "請離開鏡頭 0.5 秒");
+  }
+}
+
+async function handleHandResults(results) {
+  const landmarks = results.multiHandLandmarks?.[0];
+  drawDetection(landmarks, 9);
+  if (!detecting) return;
+
+  if (waveDetector.observe(landmarks?.[0]?.x, performance.now())) {
+    if (trigger.forceTrigger(performance.now()).triggered) await beginPlayback();
+  } else if (trigger.state !== "playing") {
+    setStatus("ready", "左右揮手以播放");
   }
 }
 
@@ -325,9 +339,10 @@ async function processCameraFrame() {
   ) {
     processingFrame = true;
     try {
-      await faceMesh.send({ image: elements.camera });
+      const detector = settings.detectionMode === "wave" ? hands : faceMesh;
+      await detector.send({ image: elements.camera });
     } catch (error) {
-      setStatus("error", "人臉模型暫時無法運行");
+      setStatus("error", "感應模型暫時無法運行");
       showToast(error.message || "請重新啟動感應器");
     } finally {
       processingFrame = false;
@@ -336,23 +351,34 @@ async function processCameraFrame() {
   frameRequest = requestAnimationFrame(processCameraFrame);
 }
 
-async function startFaceDetection() {
+async function startDetection() {
   const localHost = ["localhost", "127.0.0.1"].includes(location.hostname);
   if (!window.isSecureContext && !localHost) throw new Error("相機需要 HTTPS 安全網址");
   if (!navigator.mediaDevices?.getUserMedia) throw new Error("此瀏覽器不支援相機感應");
-  if (!window.FaceMesh) throw new Error("人臉模型未能載入");
+  if (settings.detectionMode === "wave" && !window.Hands) throw new Error("手部模型未能載入");
+  if (settings.detectionMode === "face" && !window.FaceMesh) throw new Error("人臉模型未能載入");
 
   await stopCamera();
-  faceMesh ||= new window.FaceMesh({
-    locateFile: (file) => `./vendor/face_mesh/${file}`,
-  });
-  faceMesh.setOptions({
-    maxNumFaces: 1,
-    refineLandmarks: false,
-    minDetectionConfidence: 0.55,
-    minTrackingConfidence: 0.55,
-  });
-  faceMesh.onResults(handleFaceResults);
+  waveDetector.reset();
+  if (settings.detectionMode === "wave") {
+    hands ||= new window.Hands({ locateFile: (file) => `./vendor/hands/${file}` });
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 0,
+      minDetectionConfidence: 0.55,
+      minTrackingConfidence: 0.55,
+    });
+    hands.onResults(handleHandResults);
+  } else {
+    faceMesh ||= new window.FaceMesh({ locateFile: (file) => `./vendor/face_mesh/${file}` });
+    faceMesh.setOptions({
+      maxNumFaces: 1,
+      refineLandmarks: false,
+      minDetectionConfidence: 0.55,
+      minTrackingConfidence: 0.55,
+    });
+    faceMesh.onResults(handleFaceResults);
+  }
 
   cameraStream = await navigator.mediaDevices.getUserMedia({
     audio: false,
@@ -367,7 +393,7 @@ async function startFaceDetection() {
   cameraStarted = true;
   frameRequest = requestAnimationFrame(processCameraFrame);
   await requestWakeLock();
-  setStatus("ready", "等待人臉");
+  setStatus("ready", settings.detectionMode === "wave" ? "等待揮手" : "等待人臉");
 }
 
 async function activateExperience() {
@@ -376,15 +402,15 @@ async function activateExperience() {
   try {
     await ensureAudioContext();
     playChime();
-    loadSpeechBuffers().catch(() => {});
+    loadAudioBuffers().catch(() => {});
     trigger.start();
     started = true;
     elements.startOverlay.hidden = true;
     elements.toggle.disabled = false;
     elements.manual.disabled = false;
-    setStatus("ready", "等待人臉");
+    setStatus("ready", settings.detectionMode === "wave" ? "等待揮手" : "等待人臉");
     try {
-      await startFaceDetection();
+      await startDetection();
       showToast("相機及聲音已啟動");
     } catch (cameraError) {
       setStatus("error", "相機未能啟動；仍可手動測試");
@@ -429,7 +455,7 @@ elements.toggle.addEventListener("click", () => {
     trigger.resume(performance.now());
     elements.toggle.textContent = "暫停感應";
     elements.manual.disabled = false;
-    setStatus("ready", "等待人臉離開後再次感應");
+    setStatus("ready", settings.detectionMode === "wave" ? "等待揮手" : "等待人臉離開後再次感應");
   }
 });
 
@@ -456,13 +482,14 @@ $("#facing-environment").addEventListener("click", () => {
 $("#btn-settings").addEventListener("click", () => elements.settingsDialog.showModal());
 $("#btn-save-settings").addEventListener("click", async () => {
   settings.duration = Number(elements.duration.value);
+  settings.detectionMode = elements.detectionMode.value;
   settings.visualMode = elements.visualMode.value;
   persistSettings();
   syncSettingsUi();
   showToast("設定已儲存");
   if (cameraStarted) {
     try {
-      await startFaceDetection();
+      await startDetection();
     } catch (error) {
       setStatus("error", "鏡頭切換失敗");
       showToast(error.message || "請檢查相機權限");

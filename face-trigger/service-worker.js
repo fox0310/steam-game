@@ -1,16 +1,18 @@
-const CACHE_NAME = "face-trigger-v2";
+const CACHE_NAME = "face-trigger-v3";
 const APP_FILES = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
   "./trigger-state.js",
+  "./gesture-state.js",
   "./manifest.webmanifest",
   "./assets/app-icon.svg",
   "./assets/audio/afternoon.wav",
   "./assets/audio/class-g.wav",
   "./assets/audio/hello.wav",
   "./assets/audio/morning.wav",
+  "./assets/audio/upbeat-22s.m4a",
   "./vendor/qrcode.min.js",
   "./vendor/face_mesh/face_mesh.binarypb",
   "./vendor/face_mesh/face_mesh.js",
@@ -21,6 +23,16 @@ const APP_FILES = [
   "./vendor/face_mesh/face_mesh_solution_simd_wasm_bin.wasm",
   "./vendor/face_mesh/face_mesh_solution_wasm_bin.js",
   "./vendor/face_mesh/face_mesh_solution_wasm_bin.wasm",
+  "./vendor/hands/hand_landmark_lite.tflite",
+  "./vendor/hands/hands.binarypb",
+  "./vendor/hands/hands.js",
+  "./vendor/hands/hands_solution_packed_assets.data",
+  "./vendor/hands/hands_solution_packed_assets_loader.js",
+  "./vendor/hands/hands_solution_simd_wasm_bin.data",
+  "./vendor/hands/hands_solution_simd_wasm_bin.js",
+  "./vendor/hands/hands_solution_simd_wasm_bin.wasm",
+  "./vendor/hands/hands_solution_wasm_bin.js",
+  "./vendor/hands/hands_solution_wasm_bin.wasm",
 ];
 
 self.addEventListener("install", (event) => {
