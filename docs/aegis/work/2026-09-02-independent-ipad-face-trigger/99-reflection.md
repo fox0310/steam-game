@@ -29,3 +29,4 @@
 - `file://` 不能載入 ES module，加入直接可見的 HTTPS 正式入口。
 - 系統粵語 voice 在 Android／Safari 不一致，四段內容改為內置 WAV；Web Speech 依賴已移除。
 - 跨裝置測試擴展至 Android Chrome、iPhone Safari、iPad Safari，以及 320px 手機闊度。
+- v2 Pages run `33631082019` 成功；四個線上 WAV 及 Service Worker v2 已驗證。

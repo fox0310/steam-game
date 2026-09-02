@@ -29,3 +29,5 @@
 - Audio fix RED: 本機檔案 HTTPS 指引及 AudioBuffer 播放測試分別找不到 heading、buffer starts 為 0；self-check 找不到四個音檔 owner。
 - Audio fix GREEN: 四段 `zh-HK` 改用內置 mono PCM WAV；Web Audio buffer 在 Android Chrome、iPhone Safari、iPad Safari 均啟動；啟動按鈕即時播放確認音。
 - Compatibility: Playwright 22 passed，涵蓋 Android Chrome、iPhone Safari、iPad Safari、320px 至 1024px、Face Mesh 初始化及離線音檔；2 項 WebKit 離線模擬因 Playwright 內部錯誤 skipped，保留實機 Safari 驗收。
+- Audio v2 deploy: commit `bca912e` 已推送；Pages run `33631082019` 成功。
+- Audio v2 live: `index.html`、`app.js`、Service Worker v2 及四個 WAV 均 HTTP 200；正式頁顯示「可離線」。
