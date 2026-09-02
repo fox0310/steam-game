@@ -164,6 +164,17 @@ function testOfflinePwaOwners() {
   assert.equal(app.includes("https://fox0310.github.io/steam-game/"), true);
 }
 
+function testDeploymentOwners() {
+  const workflowUrl = new URL("../.github/workflows/face-trigger-pages.yml", import.meta.url);
+  const readmeUrl = new URL("../README.md", import.meta.url);
+  assert.equal(existsSync(workflowUrl), true);
+  const workflow = readFileSync(workflowUrl, "utf8");
+  const readme = readFileSync(readmeUrl, "utf8");
+  assert.equal(workflow.includes("path: face-trigger"), true);
+  assert.equal(workflow.includes("actions/deploy-pages@v4"), true);
+  assert.equal(readme.includes("https://fox0310.github.io/steam-game/"), true);
+}
+
 testStableFaceTriggersOnce();
 testBriefFaceDoesNotTrigger();
 testExitMustLastTwoSeconds();
@@ -175,5 +186,6 @@ testSoundOptionsAreCantoneseOnly();
 testApprovedUiStructure();
 testLocalFaceRuntimeWiring();
 testOfflinePwaOwners();
+testDeploymentOwners();
 
-console.log("face-trigger self-check: 11 checks passed");
+console.log("face-trigger self-check: 12 checks passed");

@@ -6,6 +6,46 @@
 - `fishing-game/`：四人共享海域捕魚競技
 - `rocket-game/`：低組學生用空白鍵或拍制控制的 3D 星空火箭升空
 
+另有獨立靜態工具：
+
+- `face-trigger/`：五部 iPad 可使用同一 QR Code 進入、各自獨立運行的人臉音訊觸發器
+
+## 人臉音樂觸發器
+
+固定網址：`https://fox0310.github.io/steam-game/`
+
+用途及限制：
+
+- 五部 iPad 可掃描同一 QR Code；沒有裝置編號、房間或同步。
+- 每部 iPad 的播放內容、音量、鏡頭及累計次數只保存在該裝置。
+- 相機影像只在瀏覽器內處理，不會上傳、錄製或保存。
+- 語音只使用 iPad 的粵語 `zh-HK` 聲音；另有簡短輕快音樂。
+- 第一次使用必須連線，等待畫面顯示「可離線」後，之後可離線重開。
+
+本機預覽：
+
+```bash
+npm run start:face-trigger
+```
+
+然後開啟 `http://127.0.0.1:5200/`。本機預覽只供 Mac 測試；正式 iPad 相機需使用上面的 HTTPS Pages 網址。
+
+GitHub 首次設定：進入 repo `Settings → Pages → Build and deployment`，將來源設為 `GitHub Actions`。推送 `main` 後，workflow 只會發佈 `face-trigger/`，不用長開 Mac。
+
+iPad 首次使用：
+
+1. 用 Safari 開啟固定網址，允許相機。
+2. 按「分享 QR」讓其餘 iPad 掃描同一 QR Code。
+3. 每部 iPad 各自選擇內容，再按「立即啟動」。
+4. 等待「可離線」；如需接近 App 模式，可用 Safari 分享選單「加入主畫面」。
+
+驗證：
+
+```bash
+npm run test:face-trigger
+npm run playtest:face-trigger
+```
+
 ## 公開網址
 
 VM 對外只需要開標準 HTTP `80` port，學校 Wi-Fi 較容易通過。

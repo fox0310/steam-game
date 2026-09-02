@@ -14,3 +14,6 @@
 - Task 4 GREEN: `face-trigger self-check: 11 checks passed`；程式語法檢查全部通過。
 - Task 4 browser RED: QRCode.js 會保留隱藏 canvas，測試錯誤選到第一個 canvas；改驗證可見 img。
 - Task 4 browser GREEN: Playwright 4/4，涵蓋固定 QR、五選項、無裝置編號／普通話、本機設定、iPad 直橫向無溢出、首次快取後離線重載。
+- Task 5 RED: deployment assertion 找不到 `.github/workflows/face-trigger-pages.yml`。
+- Task 5 GREEN: self-check 12 項；workflow 固定 `configure-pages@v5`、`upload-pages-artifact@v3`、`deploy-pages@v4`，artifact 只取 `face-trigger/`。
+- Task 5 docs: README 記錄固定網址、本機預覽、五部 iPad 獨立設定、首次離線快取、加入主畫面及 Pages 一次性設定。
