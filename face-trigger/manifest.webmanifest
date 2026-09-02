@@ -1,0 +1,20 @@
+{
+  "name": "人臉音樂觸發器",
+  "short_name": "人臉觸發器",
+  "description": "每部 iPad 獨立運行的本機人臉音訊觸發器",
+  "lang": "zh-Hant-HK",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#051313",
+  "theme_color": "#071c1c",
+  "icons": [
+    {
+      "src": "./assets/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

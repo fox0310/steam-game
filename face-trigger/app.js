@@ -53,6 +53,7 @@ const elements = {
   qrCode: $("#qr-code"),
   shareUrl: $("#share-url"),
   toast: $("#toast"),
+  offlineStatus: $("#offline-status"),
 };
 
 function persistSettings() {
@@ -481,6 +482,31 @@ function renderQrCode() {
   }
 }
 
+async function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) {
+    elements.offlineStatus.textContent = "不支援";
+    return;
+  }
+
+  try {
+    const registration = await navigator.serviceWorker.register("./service-worker.js");
+    await navigator.serviceWorker.ready;
+    elements.offlineStatus.textContent = "可離線";
+
+    if (registration.waiting) showToast("新版已準備，下次開啟時套用。");
+    registration.addEventListener("updatefound", () => {
+      const worker = registration.installing;
+      worker?.addEventListener("statechange", () => {
+        if (worker.state === "installed" && navigator.serviceWorker.controller) {
+          showToast("新版已準備，下次開啟時套用。");
+        }
+      });
+    });
+  } catch {
+    elements.offlineStatus.textContent = navigator.onLine ? "未完成" : "離線中";
+  }
+}
+
 $("#btn-share").addEventListener("click", () => {
   renderQrCode();
   elements.shareDialog.showModal();
@@ -492,6 +518,7 @@ $("#btn-copy-url").addEventListener("click", async () => {
 });
 
 syncSettingsUi();
+registerServiceWorker();
 
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible" && started) requestWakeLock();

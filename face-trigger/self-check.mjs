@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import {
   DEFAULT_SETTINGS,
   SOUND_OPTIONS,
@@ -155,6 +155,15 @@ function testLocalFaceRuntimeWiring() {
   assert.equal(app.includes("./vendor/face_mesh/"), true);
 }
 
+function testOfflinePwaOwners() {
+  const app = readFileSync(new URL("./app.js", import.meta.url), "utf8");
+  assert.equal(existsSync(new URL("./manifest.webmanifest", import.meta.url)), true);
+  assert.equal(existsSync(new URL("./service-worker.js", import.meta.url)), true);
+  assert.equal(existsSync(new URL("./vendor/qrcode.min.js", import.meta.url)), true);
+  assert.equal(app.includes("serviceWorker.register"), true);
+  assert.equal(app.includes("https://fox0310.github.io/steam-game/"), true);
+}
+
 testStableFaceTriggersOnce();
 testBriefFaceDoesNotTrigger();
 testExitMustLastTwoSeconds();
@@ -165,5 +174,6 @@ testSettingsValidation();
 testSoundOptionsAreCantoneseOnly();
 testApprovedUiStructure();
 testLocalFaceRuntimeWiring();
+testOfflinePwaOwners();
 
-console.log("face-trigger self-check: 10 checks passed");
+console.log("face-trigger self-check: 11 checks passed");

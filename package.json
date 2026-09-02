@@ -7,9 +7,12 @@
     "start:gold": "node server.js",
     "start:fishing": "node fishing-game/server.js",
     "start:rocket": "node rocket-game/server.js",
+    "start:face-trigger": "node face-trigger/server.cjs",
     "start:all": "sh -c 'PORT=5173 node server.js & PORT=5180 node fishing-game/server.js & PORT=5190 node rocket-game/server.js & wait'",
     "test:rocket": "node rocket-game/self-check.mjs",
-    "playtest:rocket": "playwright test rocket-game/playtest.spec.js --browser=chromium --reporter=line"
+    "playtest:rocket": "playwright test rocket-game/playtest.spec.js --browser=chromium --reporter=line",
+    "test:face-trigger": "node face-trigger/self-check.mjs",
+    "playtest:face-trigger": "playwright test --config face-trigger/playwright.config.js --browser=chromium --reporter=line"
   },
   "engines": {
     "node": ">=20"

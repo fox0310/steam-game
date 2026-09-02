@@ -10,3 +10,7 @@
 - Task 3 GREEN: `face-trigger self-check: 10 checks passed`；`node --check face-trigger/app.js` 與 `git diff --check` 通過。
 - Task 3 runtime: 固定 `@mediapipe/face_mesh@0.4.1633559619` 約 16 MB，所有模型及 WASM 由 `./vendor/face_mesh/` 載入。
 - Task 3 camera: 使用原生 `navigator.mediaDevices.getUserMedia` 與單一 frame loop；移除會自行 `alert()` 的 camera helper；錯誤後保留手動測試。
+- Task 4 RED: `testOfflinePwaOwners` 找不到 manifest、Service Worker 及 registration owner。
+- Task 4 GREEN: `face-trigger self-check: 11 checks passed`；程式語法檢查全部通過。
+- Task 4 browser RED: QRCode.js 會保留隱藏 canvas，測試錯誤選到第一個 canvas；改驗證可見 img。
+- Task 4 browser GREEN: Playwright 4/4，涵蓋固定 QR、五選項、無裝置編號／普通話、本機設定、iPad 直橫向無溢出、首次快取後離線重載。

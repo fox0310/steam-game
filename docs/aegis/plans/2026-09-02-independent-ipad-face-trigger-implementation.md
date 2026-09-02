@@ -135,7 +135,7 @@
 
 ## Files
 
-Create：`face-trigger/index.html`、`styles.css`、`trigger-state.js`、`app.js`、`service-worker.js`、`manifest.webmanifest`、`self-check.mjs`、`playtest.spec.js`、`assets/app-icon.svg`、`vendor/**`、`.github/workflows/face-trigger-pages.yml`。
+Create：`face-trigger/index.html`、`styles.css`、`trigger-state.js`、`app.js`、`service-worker.js`、`manifest.webmanifest`、`self-check.mjs`、`playtest.spec.js`、`playwright.config.js`、`server.cjs`、`package.json`、`assets/app-icon.svg`、`vendor/**`、`.github/workflows/face-trigger-pages.yml`。
 
 Modify：`package.json` 加測試與本機啟動 scripts；`README.md` 加使用方式。
 
@@ -170,7 +170,7 @@ Modify：`package.json` 加測試與本機啟動 scripts；`README.md` 加使用
 
 ### Task 4：離線 PWA、QR 與 Playwright
 
-- Files: create `manifest.webmanifest`, `service-worker.js`, `playtest.spec.js`; modify `index.html`, `app.js`, `package.json`。
+- Files: create `manifest.webmanifest`, `service-worker.js`, `playtest.spec.js`, `playwright.config.js`, `server.cjs`, `face-trigger/package.json`; modify `index.html`, `app.js`, root `package.json`。
 - Why: 同一固定 QR 可進入，首次快取後可離線。
 - Change Necessity: 普通靜態頁沒有離線 readiness 或更新控制。
 - Impact/Compatibility: cache 只涵蓋新 app。
