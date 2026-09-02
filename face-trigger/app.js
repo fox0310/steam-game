@@ -17,6 +17,12 @@ let activeAudioNodes = [];
 let playbackTimer;
 let countdownTimer;
 let toastTimer;
+let faceMesh;
+let cameraStream;
+let cameraStarted = false;
+let wakeLock;
+let frameRequest;
+let processingFrame = false;
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -212,9 +218,143 @@ function finishPlayback(stoppedByUser = false) {
   elements.countdown.hidden = true;
   elements.audioWave.hidden = true;
   elements.stop.disabled = true;
-  trigger.finishPlaying(performance.now());
-  setStatus(detecting ? "ready" : "paused", detecting ? "等待人臉離開後再次感應" : "感應已暫停");
+  const next = trigger.finishPlaying(performance.now());
+  const readyText = next.ready ? "等待人臉" : "等待人臉離開後再次感應";
+  setStatus(detecting ? "ready" : "paused", detecting ? readyText : "感應已暫停");
   if (stoppedByUser) showToast("已中斷播放");
+}
+
+function drawFace(landmarks) {
+  const { canvas, camera } = elements;
+  const context = canvas.getContext("2d");
+  if (!camera.videoWidth || !camera.videoHeight) return;
+  if (canvas.width !== camera.videoWidth || canvas.height !== camera.videoHeight) {
+    canvas.width = camera.videoWidth;
+    canvas.height = camera.videoHeight;
+  }
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  if (!landmarks || settings.visualMode === "none") return;
+
+  const color = trigger.state === "playing" ? "#4de5b4" : "#6ed8ff";
+  const points = landmarks.map((point) => ({ x: point.x * canvas.width, y: point.y * canvas.height }));
+  const nose = points[1];
+  context.save();
+  context.strokeStyle = color;
+  context.fillStyle = color;
+  context.shadowColor = color;
+  context.shadowBlur = 16;
+
+  if (settings.visualMode === "dot") {
+    context.beginPath();
+    context.arc(nose.x, nose.y, 13, 0, Math.PI * 2);
+    context.fill();
+  } else if (settings.visualMode === "hud") {
+    context.lineWidth = 2.5;
+    context.beginPath();
+    context.arc(nose.x, nose.y, 36, 0, Math.PI * 2);
+    context.moveTo(nose.x - 50, nose.y);
+    context.lineTo(nose.x + 50, nose.y);
+    context.moveTo(nose.x, nose.y - 50);
+    context.lineTo(nose.x, nose.y + 50);
+    context.stroke();
+  } else if (settings.visualMode === "box") {
+    const xs = points.map(({ x }) => x);
+    const ys = points.map(({ y }) => y);
+    const minX = Math.min(...xs);
+    const minY = Math.min(...ys);
+    context.lineWidth = 3;
+    context.strokeRect(minX - 10, minY - 10, Math.max(...xs) - minX + 20, Math.max(...ys) - minY + 20);
+  }
+  context.restore();
+}
+
+async function handleFaceResults(results) {
+  const landmarks = results.multiFaceLandmarks?.[0];
+  drawFace(landmarks);
+  if (!detecting) return;
+
+  const observation = trigger.observeFace(Boolean(landmarks), performance.now());
+  if (observation.triggered) {
+    await beginPlayback();
+  } else if (trigger.state === "arming") {
+    setStatus("ready", "正在確認人臉…");
+  } else if (trigger.state === "ready") {
+    setStatus("ready", "等待人臉");
+  } else if (trigger.state === "wait-for-exit") {
+    setStatus("ready", "請離開鏡頭 2 秒");
+  }
+}
+
+async function requestWakeLock() {
+  if (!("wakeLock" in navigator) || document.visibilityState !== "visible") return;
+  try {
+    wakeLock = await navigator.wakeLock.request("screen");
+  } catch {
+    showToast("未能保持螢幕常亮，請檢查 iPad 自動鎖定設定。");
+  }
+}
+
+async function stopCamera() {
+  cancelAnimationFrame(frameRequest);
+  cameraStarted = false;
+  cameraStream?.getTracks().forEach((track) => track.stop());
+  cameraStream = undefined;
+  elements.camera.srcObject = null;
+}
+
+async function processCameraFrame() {
+  if (!cameraStarted) return;
+  if (
+    elements.camera.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA &&
+    detecting &&
+    trigger.state !== "playing" &&
+    !processingFrame
+  ) {
+    processingFrame = true;
+    try {
+      await faceMesh.send({ image: elements.camera });
+    } catch (error) {
+      setStatus("error", "人臉模型暫時無法運行");
+      showToast(error.message || "請重新啟動感應器");
+    } finally {
+      processingFrame = false;
+    }
+  }
+  frameRequest = requestAnimationFrame(processCameraFrame);
+}
+
+async function startFaceDetection() {
+  const localHost = ["localhost", "127.0.0.1"].includes(location.hostname);
+  if (!window.isSecureContext && !localHost) throw new Error("相機需要 HTTPS 安全網址");
+  if (!navigator.mediaDevices?.getUserMedia) throw new Error("此瀏覽器不支援相機感應");
+  if (!window.FaceMesh) throw new Error("人臉模型未能載入");
+
+  await stopCamera();
+  faceMesh ||= new window.FaceMesh({
+    locateFile: (file) => `./vendor/face_mesh/${file}`,
+  });
+  faceMesh.setOptions({
+    maxNumFaces: 1,
+    refineLandmarks: false,
+    minDetectionConfidence: 0.55,
+    minTrackingConfidence: 0.55,
+  });
+  faceMesh.onResults(handleFaceResults);
+
+  cameraStream = await navigator.mediaDevices.getUserMedia({
+    audio: false,
+    video: {
+      facingMode: { ideal: settings.facingMode },
+      width: { ideal: 960 },
+      height: { ideal: 720 },
+    },
+  });
+  elements.camera.srcObject = cameraStream;
+  await elements.camera.play();
+  cameraStarted = true;
+  frameRequest = requestAnimationFrame(processCameraFrame);
+  await requestWakeLock();
+  setStatus("ready", "等待人臉");
 }
 
 async function activateExperience() {
@@ -228,7 +368,13 @@ async function activateExperience() {
     elements.toggle.disabled = false;
     elements.manual.disabled = false;
     setStatus("ready", "等待人臉");
-    showToast("聲音已啟動；正在準備相機感應。");
+    try {
+      await startFaceDetection();
+      showToast("相機及聲音已啟動");
+    } catch (cameraError) {
+      setStatus("error", "相機未能啟動；仍可手動測試");
+      showToast(cameraError.message || "請檢查 Safari 相機權限");
+    }
   } catch (error) {
     elements.start.disabled = false;
     elements.startError.hidden = false;
@@ -293,12 +439,20 @@ $("#facing-environment").addEventListener("click", () => {
 });
 
 $("#btn-settings").addEventListener("click", () => elements.settingsDialog.showModal());
-$("#btn-save-settings").addEventListener("click", () => {
+$("#btn-save-settings").addEventListener("click", async () => {
   settings.duration = Number(elements.duration.value);
   settings.visualMode = elements.visualMode.value;
   persistSettings();
   syncSettingsUi();
   showToast("設定已儲存");
+  if (cameraStarted) {
+    try {
+      await startFaceDetection();
+    } catch (error) {
+      setStatus("error", "鏡頭切換失敗");
+      showToast(error.message || "請檢查相機權限");
+    }
+  }
 });
 
 $("#btn-fullscreen").addEventListener("click", async () => {
@@ -338,3 +492,12 @@ $("#btn-copy-url").addEventListener("click", async () => {
 });
 
 syncSettingsUi();
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && started) requestWakeLock();
+});
+
+window.addEventListener("pagehide", () => {
+  wakeLock?.release?.();
+  stopCamera();
+});

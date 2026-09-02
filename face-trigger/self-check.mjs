@@ -145,6 +145,16 @@ function testApprovedUiStructure() {
   assert.equal(html.includes("id=\"btn-share\""), true);
 }
 
+function testLocalFaceRuntimeWiring() {
+  const html = readFileSync(new URL("./index.html", import.meta.url), "utf8");
+  const app = readFileSync(new URL("./app.js", import.meta.url), "utf8");
+  assert.equal(html.includes("./vendor/face_mesh/face_mesh.js"), true);
+  assert.equal(html.includes("camera_utils"), false);
+  assert.equal(app.includes("new window.FaceMesh"), true);
+  assert.equal(app.includes("navigator.mediaDevices.getUserMedia"), true);
+  assert.equal(app.includes("./vendor/face_mesh/"), true);
+}
+
 testStableFaceTriggersOnce();
 testBriefFaceDoesNotTrigger();
 testExitMustLastTwoSeconds();
@@ -154,5 +164,6 @@ testManualTriggerReturnsToReady();
 testSettingsValidation();
 testSoundOptionsAreCantoneseOnly();
 testApprovedUiStructure();
+testLocalFaceRuntimeWiring();
 
-console.log("face-trigger self-check: 9 checks passed");
+console.log("face-trigger self-check: 10 checks passed");

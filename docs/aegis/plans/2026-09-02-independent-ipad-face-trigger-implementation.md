@@ -12,7 +12,6 @@
 
 - 原生 HTML、CSS、ES modules、Web Audio、Web Speech、Service Worker。
 - `@mediapipe/face_mesh@0.4.1633559619`。
-- `@mediapipe/camera_utils@0.3.1675466862`。
 - `qrcodejs@1.0.0`。
 - Node self-check 與現有 `@playwright/test`。
 
@@ -167,7 +166,7 @@ Modify：`package.json` 加測試與本機啟動 scripts；`README.md` 加使用
 - Change Necessity: 瀏覽器原生 API 沒有人臉模型。
 - Impact/Compatibility: vendor 版本固定；無網絡 API。
 - Verification: camera smoke test；`rg -n 'https?://' face-trigger` 只容許 canonical URL 及來源文字。
-- Steps: `npm pack` 固定版本並只複製執行檔；實作鏡頭啟停／切換；callback 只傳 boolean 與 timestamp 給狀態機；加入權限、模型及 Wake Lock 錯誤處理；確認 self-check；commit `feat: add local face detection runtime`。
+- Steps: `npm pack` 固定 Face Mesh 版本並只複製執行檔；以原生 `getUserMedia` 實作鏡頭啟停／切換，避免 helper 自行彈出錯誤；callback 只傳 boolean 與 timestamp 給狀態機；加入權限、模型及 Wake Lock 錯誤處理；確認 self-check；commit `feat: add local face detection runtime`。
 
 ### Task 4：離線 PWA、QR 與 Playwright
 
