@@ -17,10 +17,21 @@
     <script type="module" src="./app.js"></script>
   </head>
   <body>
+    <section id="file-warning" class="file-warning" hidden>
+      <div>
+        <h1>請使用安全網址</h1>
+        <p>直接開啟本機檔案時，瀏覽器會阻擋聲音、相機及程式功能。</p>
+        <a class="button primary large" href="https://fox0310.github.io/steam-game/">開啟正式版本</a>
+      </div>
+    </section>
+    <script>
+      if (location.protocol === "file:") document.querySelector("#file-warning").hidden = false;
+    </script>
+
     <header class="topbar">
       <a class="brand" href="./" aria-label="重新載入人臉音樂觸發器">
         <span class="brand-mark" aria-hidden="true">♫</span>
-        <span><strong>人臉音樂觸發器</strong><small>每部 iPad 獨立運行</small></span>
+        <span><strong>人臉音樂觸發器</strong><small>每部裝置獨立運行</small></span>
       </a>
       <nav aria-label="頁面工具">
         <button id="btn-share" class="button compact" type="button">分享 QR</button>
@@ -50,7 +61,7 @@
         <div id="start-overlay" class="start-overlay">
           <div class="start-symbol" aria-hidden="true">▶</div>
           <h1>啟動感應器</h1>
-          <p>按一下以允許相機及開啟聲音。相機畫面只在這部 iPad 處理。</p>
+          <p>按一下以允許相機及開啟聲音。相機畫面只在這部裝置處理。</p>
           <button id="btn-start" class="button primary large" type="button">立即啟動</button>
           <p id="start-error" class="error-message" role="alert" hidden></p>
         </div>
@@ -121,7 +132,7 @@
     <dialog id="share-dialog" class="modal">
       <div class="modal-card share-card">
         <div class="modal-heading"><h2>同一個 QR Code</h2><button id="btn-close-share" class="icon-button" type="button" aria-label="關閉 QR Code">×</button></div>
-        <p>五部 iPad 掃描後會各自獨立運行。</p>
+        <p>手機及平板掃描後會各自獨立運行。</p>
         <div id="qr-code" class="qr-code" aria-label="網頁 QR Code"></div>
         <code id="share-url">https://fox0310.github.io/steam-game/</code>
         <button id="btn-copy-url" class="button secondary" type="button">複製網址</button>

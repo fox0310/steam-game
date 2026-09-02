@@ -133,6 +133,12 @@ function testSoundOptionsAreCantoneseOnly() {
     ),
     true,
   );
+  assert.equal(
+    SOUND_OPTIONS.filter(({ kind }) => kind === "speech").every(({ audio }) => {
+      return audio?.startsWith("./assets/audio/") && existsSync(new URL(audio, import.meta.url));
+    }),
+    true,
+  );
 }
 
 function testApprovedUiStructure() {

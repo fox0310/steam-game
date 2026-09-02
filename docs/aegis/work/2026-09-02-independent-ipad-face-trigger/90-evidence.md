@@ -24,3 +24,8 @@
 - GitHub push: main 已推送至 `fox0310/steam-game`；Git credential 已透過現有 `gh` 登入設定。
 - Pages: source 已由 legacy 改為 workflow；run `33629122348` 成功，正式網址 `https://fox0310.github.io/steam-game/`。
 - Live check: `index.html`、Service Worker、manifest、QRCode.js、Face Mesh JS 及 6.1 MB SIMD WASM 全部 HTTP 200；正式頁顯示「可離線」。
+- Audio bug reproduction: 直接開啟 `file:///.../face-trigger/index.html` 時，Chromium 報 ES module CORS 錯誤，`app.js` 沒有載入；這是無聲及按鈕無反應的直接原因。
+- Android difference: 模擬 Android Chrome 沒有 `zh-HK` voice 時，舊版 `playCantonese` 沒有建立 oscillator 或呼叫 speech，證實系統語音依賴不能保證內容播放。
+- Audio fix RED: 本機檔案 HTTPS 指引及 AudioBuffer 播放測試分別找不到 heading、buffer starts 為 0；self-check 找不到四個音檔 owner。
+- Audio fix GREEN: 四段 `zh-HK` 改用內置 mono PCM WAV；Web Audio buffer 在 Android Chrome、iPhone Safari、iPad Safari 均啟動；啟動按鈕即時播放確認音。
+- Compatibility: Playwright 22 passed，涵蓋 Android Chrome、iPhone Safari、iPad Safari、320px 至 1024px、Face Mesh 初始化及離線音檔；2 項 WebKit 離線模擬因 Playwright 內部錯誤 skipped，保留實機 Safari 驗收。

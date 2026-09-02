@@ -1,7 +1,7 @@
 {
   "name": "人臉音樂觸發器",
   "short_name": "人臉觸發器",
-  "description": "每部 iPad 獨立運行的本機人臉音訊觸發器",
+  "description": "每部手機及平板獨立運行的本機人臉音訊觸發器",
   "lang": "zh-Hant-HK",
   "start_url": "./",
   "scope": "./",

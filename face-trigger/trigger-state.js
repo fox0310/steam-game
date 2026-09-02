@@ -1,8 +1,8 @@
 export const SOUND_OPTIONS = Object.freeze([
-  { id: "morning", label: "早晨", kind: "speech", text: "早晨", lang: "zh-HK" },
-  { id: "afternoon", label: "午安", kind: "speech", text: "午安", lang: "zh-HK" },
-  { id: "hello", label: "你好", kind: "speech", text: "你好", lang: "zh-HK" },
-  { id: "class-g", label: "G班", kind: "speech", text: "G班", lang: "zh-HK" },
+  { id: "morning", label: "早晨", kind: "speech", text: "早晨", lang: "zh-HK", audio: "./assets/audio/morning.wav" },
+  { id: "afternoon", label: "午安", kind: "speech", text: "午安", lang: "zh-HK", audio: "./assets/audio/afternoon.wav" },
+  { id: "hello", label: "你好", kind: "speech", text: "你好", lang: "zh-HK", audio: "./assets/audio/hello.wav" },
+  { id: "class-g", label: "G班", kind: "speech", text: "G班", lang: "zh-HK", audio: "./assets/audio/class-g.wav" },
   { id: "music", label: "輕快音樂", kind: "music" },
 ]);
 

@@ -12,7 +12,7 @@
     "test:rocket": "node rocket-game/self-check.mjs",
     "playtest:rocket": "playwright test rocket-game/playtest.spec.js --browser=chromium --reporter=line",
     "test:face-trigger": "node face-trigger/self-check.mjs",
-    "playtest:face-trigger": "playwright test --config face-trigger/playwright.config.js --browser=chromium --reporter=line"
+    "playtest:face-trigger": "playwright test --config face-trigger/playwright.config.js --reporter=line"
   },
   "engines": {
     "node": ">=20"

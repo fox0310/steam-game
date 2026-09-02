@@ -23,6 +23,8 @@ let cameraStarted = false;
 let wakeLock;
 let frameRequest;
 let processingFrame = false;
+let audioLoadPromise;
+const speechBuffers = new Map();
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -100,9 +102,27 @@ function syncSettingsUi() {
 }
 
 async function ensureAudioContext() {
-  audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) throw new Error("此瀏覽器不支援網頁聲音");
+  audioContext ||= new AudioContextClass();
   if (audioContext.state === "suspended") await audioContext.resume();
+  if (audioContext.state !== "running") throw new Error("聲音未能啟動，請關閉靜音模式後再試");
   return audioContext;
+}
+
+function loadSpeechBuffers() {
+  audioLoadPromise ||= Promise.all(
+    SOUND_OPTIONS.filter(({ kind }) => kind === "speech").map(async (sound) => {
+      const response = await fetch(sound.audio);
+      if (!response.ok) throw new Error(`粵語音檔載入失敗：${sound.label}`);
+      const buffer = await audioContext.decodeAudioData(await response.arrayBuffer());
+      speechBuffers.set(sound.id, buffer);
+    }),
+  ).catch((error) => {
+    audioLoadPromise = undefined;
+    throw error;
+  });
+  return audioLoadPromise;
 }
 
 function rememberNode(node) {
@@ -133,31 +153,24 @@ function playChime() {
   });
 }
 
-function findCantoneseVoice() {
-  return speechSynthesis.getVoices().find((voice) =>
-    voice.lang.replace("_", "-").toLowerCase().startsWith("zh-hk"),
-  );
+function playSpeechBuffer(buffer) {
+  const source = audioContext.createBufferSource();
+  const gain = audioContext.createGain();
+  source.buffer = buffer;
+  gain.gain.value = settings.volume;
+  source.connect(gain).connect(audioContext.destination);
+  source.start(audioContext.currentTime + 0.22);
+  rememberNode(source);
 }
 
-function playCantonese(sound) {
-  if (!("speechSynthesis" in window)) {
-    showToast("這部 iPad 不支援系統語音；可改用輕快音樂。");
-    return;
-  }
-  const voice = findCantoneseVoice();
-  if (!voice && speechSynthesis.getVoices().length) {
-    showToast("找不到粵語聲音，請在 iPad 設定下載粵語聲音。");
-    return;
-  }
+async function playCantonese(sound) {
   playChime();
-  const utterance = new SpeechSynthesisUtterance(sound.text);
-  utterance.lang = "zh-HK";
-  utterance.volume = settings.volume;
-  utterance.rate = 0.95;
-  utterance.pitch = 1.05;
-  if (voice) utterance.voice = voice;
-  speechSynthesis.cancel();
-  setTimeout(() => speechSynthesis.speak(utterance), 220);
+  try {
+    await loadSpeechBuffers();
+    playSpeechBuffer(speechBuffers.get(sound.id));
+  } catch {
+    showToast("粵語音檔未能載入；請重新連線後再試。");
+  }
 }
 
 function playUpbeatMusic() {
@@ -176,7 +189,6 @@ function playUpbeatMusic() {
 }
 
 function stopAudio() {
-  if ("speechSynthesis" in window) speechSynthesis.cancel();
   for (const node of activeAudioNodes) {
     try { node.stop(); } catch {}
     node.disconnect();
@@ -207,7 +219,7 @@ async function beginPlayback() {
   setStatus("playing", `正在播放：${sound.label}`);
   startCountdown();
   if (sound.kind === "music") playUpbeatMusic();
-  else playCantonese(sound);
+  else await playCantonese(sound);
   clearTimeout(playbackTimer);
   playbackTimer = setTimeout(() => finishPlayback(), settings.duration * 1_000);
 }
@@ -291,7 +303,7 @@ async function requestWakeLock() {
   try {
     wakeLock = await navigator.wakeLock.request("screen");
   } catch {
-    showToast("未能保持螢幕常亮，請檢查 iPad 自動鎖定設定。");
+    showToast("未能保持螢幕常亮，請檢查裝置的自動鎖定設定。");
   }
 }
 
@@ -363,6 +375,8 @@ async function activateExperience() {
   elements.startError.hidden = true;
   try {
     await ensureAudioContext();
+    playChime();
+    loadSpeechBuffers().catch(() => {});
     trigger.start();
     started = true;
     elements.startOverlay.hidden = true;

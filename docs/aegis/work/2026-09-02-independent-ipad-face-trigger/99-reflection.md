@@ -22,4 +22,10 @@
 
 ## Remaining hardware acceptance
 
-需在實體 iPad Safari 核對相機權限、人臉穩定度、已下載的粵語系統聲音及加入主畫面行為。這些不是桌面模擬可證實的項目。
+需在實體手機及平板核對相機權限、人臉穩定度、實際喇叭音量及加入主畫面行為。這些不是桌面模擬可證實的項目。
+
+## Follow-up: sound and phones
+
+- `file://` 不能載入 ES module，加入直接可見的 HTTPS 正式入口。
+- 系統粵語 voice 在 Android／Safari 不一致，四段內容改為內置 WAV；Web Speech 依賴已移除。
+- 跨裝置測試擴展至 Android Chrome、iPhone Safari、iPad Safari，以及 320px 手機闊度。
