@@ -28,6 +28,19 @@ test("iPad 直向及橫向沒有水平溢出", async ({ page }) => {
   }
 });
 
+test("相機權限失敗時仍可手動測試", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: { getUserMedia: () => Promise.reject(new Error("測試拒絕相機")) },
+    });
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "立即啟動" }).click();
+  await expect(page.locator("#status-text")).toHaveText("相機未能啟動；仍可手動測試");
+  await expect(page.getByRole("button", { name: "手動測試播放" })).toBeEnabled();
+});
+
 test("首次快取後可以離線重載", async ({ page, context }) => {
   await page.goto("/");
   await page.evaluate(() => navigator.serviceWorker.ready);

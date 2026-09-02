@@ -17,3 +17,7 @@
 - Task 5 RED: deployment assertion 找不到 `.github/workflows/face-trigger-pages.yml`。
 - Task 5 GREEN: self-check 12 項；workflow 固定 `configure-pages@v5`、`upload-pages-artifact@v3`、`deploy-pages@v4`，artifact 只取 `face-trigger/`。
 - Task 5 docs: README 記錄固定網址、本機預覽、五部 iPad 獨立設定、首次離線快取、加入主畫面及 Pages 一次性設定。
+- Task 6 automated: `npm run test:face-trigger` 12/12；`npm run playtest:face-trigger` 5/5。
+- Task 6 structural: workflow YAML、四個 JavaScript owner 語法、Service Worker 離線資產存在性及非 vendor diff 檢查全部通過。
+- Task 6 browser: 直向畫面顯示完整 QR、固定網址及「五部 iPad 掃描後會各自獨立運行」；主畫面顯示「可離線」。
+- Hardware boundary: 桌面沒有宣稱實體 iPad 相機、粵語 voice 或五機同時運行已驗收。
