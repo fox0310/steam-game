@@ -21,3 +21,6 @@
 - Task 6 structural: workflow YAML、四個 JavaScript owner 語法、Service Worker 離線資產存在性及非 vendor diff 檢查全部通過。
 - Task 6 browser: 直向畫面顯示完整 QR、固定網址及「五部 iPad 掃描後會各自獨立運行」；主畫面顯示「可離線」。
 - Hardware boundary: 桌面沒有宣稱實體 iPad 相機、粵語 voice 或五機同時運行已驗收。
+- GitHub push: main 已推送至 `fox0310/steam-game`；Git credential 已透過現有 `gh` 登入設定。
+- Pages: source 已由 legacy 改為 workflow；run `33629122348` 成功，正式網址 `https://fox0310.github.io/steam-game/`。
+- Live check: `index.html`、Service Worker、manifest、QRCode.js、Face Mesh JS 及 6.1 MB SIMD WASM 全部 HTTP 200；正式頁顯示「可離線」。

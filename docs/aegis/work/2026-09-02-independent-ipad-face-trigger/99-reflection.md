@@ -18,6 +18,7 @@
 - Playwright 5/5：QR、五選項、本機持久化、iPad 直橫向、相機拒絕降級、離線重載。
 - Workflow YAML、JavaScript 語法、離線資產清單及 diff 檢查通過。
 - 瀏覽器人工核對 QR modal、固定網址及「可離線」狀態。
+- GitHub Pages workflow run `33629122348` 成功；正式網址及六個主要 runtime 資產回傳 HTTP 200。
 
 ## Remaining hardware acceptance
 
