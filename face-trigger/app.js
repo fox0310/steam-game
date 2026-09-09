@@ -10,6 +10,12 @@ import { findCardInCanvas } from "./card-detector.js";
 
 const STORAGE_KEY = "face-trigger-settings";
 const CANONICAL_URL = "https://fox0310.github.io/steam-game/";
+const CARD_SOUND = {
+  id: "card",
+  label: "拍卡聲",
+  kind: "card",
+  audio: "./assets/audio/octopus-card.m4a",
+};
 const trigger = createTriggerState();
 let settings = parseStoredSettings(localStorage.getItem(STORAGE_KEY));
 let started = false;
@@ -129,7 +135,7 @@ async function ensureAudioContext() {
 
 function loadAudioBuffers() {
   audioLoadPromise ||= Promise.all(
-    SOUND_OPTIONS.filter(({ audio }) => audio).map(async (sound) => {
+    [...SOUND_OPTIONS, CARD_SOUND].filter(({ audio }) => audio).map(async (sound) => {
       const response = await fetch(sound.audio);
       if (!response.ok) throw new Error(`音訊載入失敗：${sound.label}`);
       const buffer = await audioContext.decodeAudioData(await response.arrayBuffer());
@@ -170,12 +176,6 @@ function playChime() {
   });
 }
 
-function playCardBeep() {
-  const start = audioContext.currentTime + 0.03;
-  scheduleTone(1318.51, start, 0.08, 0.2 * settings.volume, "sine");
-  scheduleTone(1760, start + 0.11, 0.13, 0.2 * settings.volume, "sine");
-}
-
 function playAudioBuffer(buffer, delay = 0) {
   const source = audioContext.createBufferSource();
   const gain = audioContext.createGain();
@@ -205,6 +205,18 @@ async function playMusic(sound) {
   }
 }
 
+async function playCardSound() {
+  try {
+    await loadAudioBuffers();
+    const buffer = audioBuffers.get(CARD_SOUND.id);
+    playAudioBuffer(buffer);
+    return Math.ceil(buffer.duration * 1_000) + 50;
+  } catch {
+    showToast("拍卡聲未能載入；請重新連線後再試。");
+    return 550;
+  }
+}
+
 function stopAudio() {
   for (const node of activeAudioNodes) {
     try { node.stop(); } catch {}
@@ -229,7 +241,7 @@ function startCountdown() {
 async function beginPlayback() {
   const cardMode = settings.detectionMode === "card";
   const sound = cardMode
-    ? { label: "拍卡聲", kind: "card" }
+    ? CARD_SOUND
     : SOUND_OPTIONS.find(({ id }) => id === settings.sound) || SOUND_OPTIONS[0];
   await ensureAudioContext();
   settings.triggerCount += 1;
@@ -239,9 +251,9 @@ async function beginPlayback() {
   setStatus("playing", `正在播放：${sound.label}`);
   if (cardMode) {
     elements.audioWave.hidden = false;
-    playCardBeep();
+    const durationMs = await playCardSound();
     clearTimeout(playbackTimer);
-    playbackTimer = setTimeout(() => finishPlayback(), 550);
+    playbackTimer = setTimeout(() => finishPlayback(), durationMs);
     return;
   }
   startCountdown();
@@ -518,7 +530,7 @@ async function activateExperience() {
   try {
     await ensureAudioContext();
     playChime();
-    if (settings.detectionMode !== "card") loadAudioBuffers().catch(() => {});
+    loadAudioBuffers().catch(() => {});
     trigger.start();
     started = true;
     elements.startOverlay.hidden = true;

@@ -131,12 +131,12 @@ test("輕快音樂使用附件第 22 秒起的音訊片段", async ({ page }) =>
   expect((await response.body()).byteLength).toBeGreaterThan(10_000);
 });
 
-test("卡片模式播放合成雙音拍卡聲", async ({ page }) => {
+test("卡片模式播放使用者提供的拍卡聲", async ({ page }) => {
   await page.addInitScript(() => {
-    window.__toneStarts = 0;
-    const originalStart = OscillatorNode.prototype.start;
-    OscillatorNode.prototype.start = function (...args) {
-      window.__toneStarts += 1;
+    window.__cardBufferStarts = 0;
+    const originalStart = AudioBufferSourceNode.prototype.start;
+    AudioBufferSourceNode.prototype.start = function (...args) {
+      window.__cardBufferStarts += 1;
       return originalStart.apply(this, args);
     };
     Object.defineProperty(navigator, "mediaDevices", {
@@ -149,9 +149,12 @@ test("卡片模式播放合成雙音拍卡聲", async ({ page }) => {
   await page.getByLabel("感應方式").selectOption("card");
   await page.getByRole("button", { name: "儲存設定" }).click();
   await page.getByRole("button", { name: "立即啟動" }).click();
-  const before = await page.evaluate(() => window.__toneStarts);
+  const before = await page.evaluate(() => window.__cardBufferStarts);
   await page.getByRole("button", { name: "手動測試播放" }).click();
-  await expect.poll(() => page.evaluate((baseline) => window.__toneStarts - baseline, before)).toBe(2);
+  await expect.poll(() => page.evaluate((baseline) => window.__cardBufferStarts - baseline, before)).toBe(1);
+  const response = await page.request.get("/assets/audio/octopus-card.m4a");
+  expect(response.ok()).toBe(true);
+  expect((await response.body()).byteLength).toBeGreaterThan(10_000);
 });
 
 test("本機人臉模型可以完成初始化", async ({ page }) => {

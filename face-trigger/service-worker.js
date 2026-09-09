@@ -1,4 +1,4 @@
-const CACHE_NAME = "face-trigger-v4";
+const CACHE_NAME = "face-trigger-v5";
 const APP_FILES = [
   "./",
   "./index.html",
@@ -13,6 +13,7 @@ const APP_FILES = [
   "./assets/audio/class-g.wav",
   "./assets/audio/hello.wav",
   "./assets/audio/morning.wav",
+  "./assets/audio/octopus-card.m4a",
   "./assets/audio/upbeat-22s.m4a",
   "./vendor/qrcode.min.js",
   "./vendor/opencv/opencv.js",
