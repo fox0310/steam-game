@@ -1,4 +1,4 @@
-const CACHE_NAME = "face-trigger-v3";
+const CACHE_NAME = "face-trigger-v4";
 const APP_FILES = [
   "./",
   "./index.html",
@@ -6,6 +6,7 @@ const APP_FILES = [
   "./app.js",
   "./trigger-state.js",
   "./gesture-state.js",
+  "./card-detector.js",
   "./manifest.webmanifest",
   "./assets/app-icon.svg",
   "./assets/audio/afternoon.wav",
@@ -14,6 +15,7 @@ const APP_FILES = [
   "./assets/audio/morning.wav",
   "./assets/audio/upbeat-22s.m4a",
   "./vendor/qrcode.min.js",
+  "./vendor/opencv/opencv.js",
   "./vendor/face_mesh/face_mesh.binarypb",
   "./vendor/face_mesh/face_mesh.js",
   "./vendor/face_mesh/face_mesh_solution_packed_assets.data",

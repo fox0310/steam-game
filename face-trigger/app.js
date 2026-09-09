@@ -6,6 +6,7 @@ import {
   serializeSettings,
 } from "./trigger-state.js";
 import { createWaveDetector } from "./gesture-state.js";
+import { findCardInCanvas } from "./card-detector.js";
 
 const STORAGE_KEY = "face-trigger-settings";
 const CANONICAL_URL = "https://fox0310.github.io/steam-game/";
@@ -26,8 +27,13 @@ let wakeLock;
 let frameRequest;
 let processingFrame = false;
 let audioLoadPromise;
+let openCvLoadPromise;
+let lastCardScan = 0;
 const audioBuffers = new Map();
 const waveDetector = createWaveDetector();
+const cardCanvas = document.createElement("canvas");
+cardCanvas.width = 320;
+cardCanvas.height = 240;
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -78,6 +84,12 @@ function showToast(message) {
   toastTimer = setTimeout(() => {
     elements.toast.hidden = true;
   }, 2_800);
+}
+
+function waitingText(ready = true) {
+  if (settings.detectionMode === "wave") return "等待揮手";
+  if (settings.detectionMode === "card") return ready ? "等待卡片" : "請移開卡片 0.5 秒";
+  return ready ? "等待人臉" : "等待人臉離開後再次感應";
 }
 
 function updateSoundButtons() {
@@ -158,6 +170,12 @@ function playChime() {
   });
 }
 
+function playCardBeep() {
+  const start = audioContext.currentTime + 0.03;
+  scheduleTone(1318.51, start, 0.08, 0.2 * settings.volume, "sine");
+  scheduleTone(1760, start + 0.11, 0.13, 0.2 * settings.volume, "sine");
+}
+
 function playAudioBuffer(buffer, delay = 0) {
   const source = audioContext.createBufferSource();
   const gain = audioContext.createGain();
@@ -209,13 +227,23 @@ function startCountdown() {
 }
 
 async function beginPlayback() {
-  const sound = SOUND_OPTIONS.find(({ id }) => id === settings.sound) || SOUND_OPTIONS[0];
+  const cardMode = settings.detectionMode === "card";
+  const sound = cardMode
+    ? { label: "拍卡聲", kind: "card" }
+    : SOUND_OPTIONS.find(({ id }) => id === settings.sound) || SOUND_OPTIONS[0];
   await ensureAudioContext();
   settings.triggerCount += 1;
   persistSettings();
   elements.count.textContent = settings.triggerCount;
   elements.stop.disabled = false;
   setStatus("playing", `正在播放：${sound.label}`);
+  if (cardMode) {
+    elements.audioWave.hidden = false;
+    playCardBeep();
+    clearTimeout(playbackTimer);
+    playbackTimer = setTimeout(() => finishPlayback(), 550);
+    return;
+  }
   startCountdown();
   if (sound.kind === "music") await playMusic(sound);
   else await playCantonese(sound);
@@ -232,9 +260,7 @@ function finishPlayback(stoppedByUser = false) {
   elements.audioWave.hidden = true;
   elements.stop.disabled = true;
   const next = trigger.finishPlaying(performance.now());
-  const readyText = settings.detectionMode === "wave"
-    ? "等待揮手"
-    : next.ready ? "等待人臉" : "等待人臉離開後再次感應";
+  const readyText = waitingText(next.ready);
   setStatus(detecting ? "ready" : "paused", detecting ? readyText : "感應已暫停");
   if (stoppedByUser) showToast("已中斷播放");
 }
@@ -312,6 +338,82 @@ async function handleHandResults(results) {
   }
 }
 
+function drawCard(card) {
+  const { canvas, camera } = elements;
+  const context = canvas.getContext("2d");
+  if (!camera.videoWidth || !camera.videoHeight) return;
+  if (canvas.width !== camera.videoWidth || canvas.height !== camera.videoHeight) {
+    canvas.width = camera.videoWidth;
+    canvas.height = camera.videoHeight;
+  }
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  if (!card || settings.visualMode === "none") return;
+
+  const points = card.points.map(({ x, y }) => ({
+    x: x * canvas.width / cardCanvas.width,
+    y: y * canvas.height / cardCanvas.height,
+  }));
+  const center = points.reduce((total, point) => ({ x: total.x + point.x / 4, y: total.y + point.y / 4 }), { x: 0, y: 0 });
+  context.save();
+  context.strokeStyle = "#6ed8ff";
+  context.fillStyle = "#6ed8ff";
+  context.lineWidth = 3;
+  context.shadowColor = "#6ed8ff";
+  context.shadowBlur = 16;
+  if (settings.visualMode === "dot") {
+    context.beginPath();
+    context.arc(center.x, center.y, 13, 0, Math.PI * 2);
+    context.fill();
+  } else if (settings.visualMode === "hud") {
+    context.beginPath();
+    context.arc(center.x, center.y, 36, 0, Math.PI * 2);
+    context.moveTo(center.x - 50, center.y);
+    context.lineTo(center.x + 50, center.y);
+    context.moveTo(center.x, center.y - 50);
+    context.lineTo(center.x, center.y + 50);
+    context.stroke();
+  } else {
+    context.beginPath();
+    context.moveTo(points[0].x, points[0].y);
+    points.slice(1).forEach((point) => context.lineTo(point.x, point.y));
+    context.closePath();
+    context.stroke();
+  }
+  context.restore();
+}
+
+async function handleCardResult(card, now) {
+  drawCard(card);
+  const observation = trigger.observeFace(Boolean(card), now);
+  if (observation.triggered) {
+    await beginPlayback();
+  } else if (trigger.state === "arming") {
+    setStatus("ready", "正在確認卡片…");
+  } else if (trigger.state === "ready") {
+    setStatus("ready", "等待卡片");
+  } else if (trigger.state === "wait-for-exit") {
+    setStatus("ready", "請移開卡片 0.5 秒");
+  }
+}
+
+async function waitForOpenCv() {
+  if (window.cv?.Mat) return;
+  openCvLoadPromise ||= new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    const deadline = performance.now() + 15_000;
+    const checkReady = () => {
+      if (window.cv?.Mat) resolve();
+      else if (performance.now() > deadline) reject(new Error("卡片辨識程式未能載入"));
+      else setTimeout(checkReady, 50);
+    };
+    script.src = "./vendor/opencv/opencv.js";
+    script.onload = checkReady;
+    script.onerror = () => reject(new Error("卡片辨識程式未能載入"));
+    document.head.append(script);
+  });
+  return openCvLoadPromise;
+}
+
 async function requestWakeLock() {
   if (!("wakeLock" in navigator) || document.visibilityState !== "visible") return;
   try {
@@ -339,8 +441,17 @@ async function processCameraFrame() {
   ) {
     processingFrame = true;
     try {
-      const detector = settings.detectionMode === "wave" ? hands : faceMesh;
-      await detector.send({ image: elements.camera });
+      if (settings.detectionMode === "card") {
+        const now = performance.now();
+        if (now - lastCardScan >= 125) {
+          lastCardScan = now;
+          cardCanvas.getContext("2d", { willReadFrequently: true }).drawImage(elements.camera, 0, 0, cardCanvas.width, cardCanvas.height);
+          await handleCardResult(findCardInCanvas(cardCanvas, window.cv), now);
+        }
+      } else {
+        const detector = settings.detectionMode === "wave" ? hands : faceMesh;
+        await detector.send({ image: elements.camera });
+      }
     } catch (error) {
       setStatus("error", "感應模型暫時無法運行");
       showToast(error.message || "請重新啟動感應器");
@@ -355,10 +466,12 @@ async function startDetection() {
   const localHost = ["localhost", "127.0.0.1"].includes(location.hostname);
   if (!window.isSecureContext && !localHost) throw new Error("相機需要 HTTPS 安全網址");
   if (!navigator.mediaDevices?.getUserMedia) throw new Error("此瀏覽器不支援相機感應");
+  if (settings.detectionMode === "card") await waitForOpenCv();
   if (settings.detectionMode === "wave" && !window.Hands) throw new Error("手部模型未能載入");
   if (settings.detectionMode === "face" && !window.FaceMesh) throw new Error("人臉模型未能載入");
 
   await stopCamera();
+  lastCardScan = 0;
   waveDetector.reset();
   if (settings.detectionMode === "wave") {
     hands ||= new window.Hands({ locateFile: (file) => `./vendor/hands/${file}` });
@@ -369,7 +482,7 @@ async function startDetection() {
       minTrackingConfidence: 0.55,
     });
     hands.onResults(handleHandResults);
-  } else {
+  } else if (settings.detectionMode === "face") {
     faceMesh ||= new window.FaceMesh({ locateFile: (file) => `./vendor/face_mesh/${file}` });
     faceMesh.setOptions({
       maxNumFaces: 1,
@@ -390,10 +503,13 @@ async function startDetection() {
   });
   elements.camera.srcObject = cameraStream;
   await elements.camera.play();
+  if (elements.camera.videoWidth && elements.camera.videoHeight) {
+    cardCanvas.height = Math.round(cardCanvas.width * elements.camera.videoHeight / elements.camera.videoWidth);
+  }
   cameraStarted = true;
   frameRequest = requestAnimationFrame(processCameraFrame);
   await requestWakeLock();
-  setStatus("ready", settings.detectionMode === "wave" ? "等待揮手" : "等待人臉");
+  setStatus("ready", waitingText());
 }
 
 async function activateExperience() {
@@ -402,13 +518,13 @@ async function activateExperience() {
   try {
     await ensureAudioContext();
     playChime();
-    loadAudioBuffers().catch(() => {});
+    if (settings.detectionMode !== "card") loadAudioBuffers().catch(() => {});
     trigger.start();
     started = true;
     elements.startOverlay.hidden = true;
     elements.toggle.disabled = false;
     elements.manual.disabled = false;
-    setStatus("ready", settings.detectionMode === "wave" ? "等待揮手" : "等待人臉");
+    setStatus("ready", waitingText());
     try {
       await startDetection();
       showToast("相機及聲音已啟動");
@@ -455,7 +571,7 @@ elements.toggle.addEventListener("click", () => {
     trigger.resume(performance.now());
     elements.toggle.textContent = "暫停感應";
     elements.manual.disabled = false;
-    setStatus("ready", settings.detectionMode === "wave" ? "等待揮手" : "等待人臉離開後再次感應");
+    setStatus("ready", waitingText(settings.detectionMode !== "face"));
   }
 });
 

@@ -114,6 +114,12 @@ function testSettingsValidation() {
   });
   assert.equal(parseStoredSettings(waveSettings).detectionMode, "wave");
 
+  const cardSettings = serializeSettings({
+    ...DEFAULT_SETTINGS,
+    detectionMode: "card",
+  });
+  assert.equal(parseStoredSettings(cardSettings).detectionMode, "card");
+
   const invalid = parseStoredSettings(
     JSON.stringify({
       schemaVersion: 1,
@@ -154,6 +160,19 @@ async function testWaveRequiresHorizontalReversal() {
   expiredMotion.observe(0.5, 0);
   expiredMotion.observe(0.72, 100);
   assert.equal(expiredMotion.observe(0.46, 1_200), false);
+}
+
+async function testCardShapeGeometry() {
+  let isCardShape;
+  try {
+    ({ isCardShape } = await import("./card-detector.js"));
+  } catch {}
+  assert.equal(typeof isCardShape, "function");
+
+  assert.equal(isCardShape({ width: 160, height: 100, contourArea: 15_000, frameArea: 76_800 }), true);
+  assert.equal(isCardShape({ width: 100, height: 100, contourArea: 9_500, frameArea: 76_800 }), false);
+  assert.equal(isCardShape({ width: 40, height: 25, contourArea: 950, frameArea: 76_800 }), false);
+  assert.equal(isCardShape({ width: 160, height: 100, contourArea: 10_000, frameArea: 76_800 }), false);
 }
 
 function testSoundOptionsAreCantoneseOnly() {
@@ -223,10 +242,11 @@ testPauseRequiresFreshExitCycle();
 testManualTriggerReturnsToReady();
 testSettingsValidation();
 await testWaveRequiresHorizontalReversal();
+await testCardShapeGeometry();
 testSoundOptionsAreCantoneseOnly();
 testApprovedUiStructure();
 testLocalFaceRuntimeWiring();
 testOfflinePwaOwners();
 testDeploymentOwners();
 
-console.log("face-trigger self-check: 13 checks passed");
+console.log("face-trigger self-check: 14 checks passed");

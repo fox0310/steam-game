@@ -17,3 +17,9 @@
 - Package: `@mediapipe/hands@0.4.1675469240`
 - Source: https://www.npmjs.com/package/@mediapipe/hands
 - License: Apache-2.0
+
+## OpenCV.js
+
+- Package: `@techstark/opencv-js@4.12.0-release.1`
+- Upstream build: https://docs.opencv.org/4.12.0/opencv.js
+- License: Apache-2.0

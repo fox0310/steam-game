@@ -28,16 +28,51 @@ test("每部裝置的選擇保存在本機", async ({ page }) => {
   await expect(page.getByRole("button", { name: "輕快音樂" })).toHaveAttribute("aria-pressed", "true");
 });
 
-test("可在每部裝置獨立選擇人臉或揮手感應", async ({ page }) => {
+test("可在每部裝置獨立選擇人臉、揮手或卡片感應", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "開啟設定" }).click();
   const mode = page.getByLabel("感應方式");
-  await expect(mode.locator("option")).toHaveCount(2);
-  await mode.selectOption("wave");
+  await expect(mode.locator("option")).toHaveCount(3);
+  await mode.selectOption("card");
   await page.getByRole("button", { name: "儲存設定" }).click();
   await page.reload();
   await page.getByRole("button", { name: "開啟設定" }).click();
-  await expect(page.getByLabel("感應方式")).toHaveValue("wave");
+  await expect(page.getByLabel("感應方式")).toHaveValue("card");
+});
+
+test("卡片模式辨識信用卡比例的長方形", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: { getUserMedia: () => Promise.reject(new Error("測試拒絕相機")) },
+    });
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "開啟設定" }).click();
+  await page.getByLabel("感應方式").selectOption("card");
+  await page.getByRole("button", { name: "儲存設定" }).click();
+  await page.getByRole("button", { name: "立即啟動" }).click();
+  await page.waitForFunction(() => Boolean(window.cv?.Mat));
+  const detected = await page.evaluate(async () => {
+    const detector = await import("./card-detector.js");
+    if (typeof detector.findCardInCanvas !== "function" || !window.cv?.Mat) return false;
+    const canvas = document.createElement("canvas");
+    canvas.width = 320;
+    canvas.height = 240;
+    const context = canvas.getContext("2d");
+    context.fillStyle = "#111";
+    context.fillRect(0, 0, 320, 240);
+    context.fillStyle = "#fff";
+    context.beginPath();
+    context.moveTo(80, 70);
+    context.lineTo(242, 82);
+    context.lineTo(234, 183);
+    context.lineTo(72, 171);
+    context.closePath();
+    context.fill();
+    return Boolean(detector.findCardInCanvas(canvas, window.cv));
+  });
+  expect(detected).toBe(true);
 });
 
 test("手機及 iPad 直向橫向沒有水平溢出", async ({ page }) => {
@@ -94,6 +129,29 @@ test("輕快音樂使用附件第 22 秒起的音訊片段", async ({ page }) =>
   const response = await page.request.get("/assets/audio/upbeat-22s.m4a");
   expect(response.ok()).toBe(true);
   expect((await response.body()).byteLength).toBeGreaterThan(10_000);
+});
+
+test("卡片模式播放合成雙音拍卡聲", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.__toneStarts = 0;
+    const originalStart = OscillatorNode.prototype.start;
+    OscillatorNode.prototype.start = function (...args) {
+      window.__toneStarts += 1;
+      return originalStart.apply(this, args);
+    };
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: { getUserMedia: () => Promise.reject(new Error("測試拒絕相機")) },
+    });
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "開啟設定" }).click();
+  await page.getByLabel("感應方式").selectOption("card");
+  await page.getByRole("button", { name: "儲存設定" }).click();
+  await page.getByRole("button", { name: "立即啟動" }).click();
+  const before = await page.evaluate(() => window.__toneStarts);
+  await page.getByRole("button", { name: "手動測試播放" }).click();
+  await expect.poll(() => page.evaluate((baseline) => window.__toneStarts - baseline, before)).toBe(2);
 });
 
 test("本機人臉模型可以完成初始化", async ({ page }) => {

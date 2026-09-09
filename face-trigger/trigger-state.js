@@ -16,10 +16,10 @@ export const DEFAULT_SETTINGS = Object.freeze({
   triggerCount: 0,
 });
 
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 const SOUND_IDS = new Set(SOUND_OPTIONS.map(({ id }) => id));
 const FACING_MODES = new Set(["user", "environment"]);
-const DETECTION_MODES = new Set(["face", "wave"]);
+const DETECTION_MODES = new Set(["face", "wave", "card"]);
 const VISUAL_MODES = new Set(["dot", "hud", "box", "none"]);
 
 function defaults() {
@@ -49,7 +49,7 @@ export function parseStoredSettings(raw) {
 
   try {
     const parsed = JSON.parse(raw);
-    if (![1, SCHEMA_VERSION].includes(parsed.schemaVersion)) {
+    if (![1, 2, SCHEMA_VERSION].includes(parsed.schemaVersion)) {
       return defaults();
     }
     const migrated = { ...parsed.settings, detectionMode: parsed.settings?.detectionMode || "face" };
