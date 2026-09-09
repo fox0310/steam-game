@@ -171,7 +171,10 @@ async function testCardShapeGeometry() {
 
   assert.equal(isCardShape({ width: 160, height: 100, contourArea: 15_000, frameArea: 76_800 }), true);
   assert.equal(isCardShape({ width: 100, height: 100, contourArea: 9_500, frameArea: 76_800 }), false);
-  assert.equal(isCardShape({ width: 40, height: 25, contourArea: 950, frameArea: 76_800 }), false);
+  assert.equal(isCardShape({ width: 40, height: 25, contourArea: 950, frameArea: 76_800 }), true);
+  assert.equal(isCardShape({ width: 300, height: 220, contourArea: 60_000, frameArea: 76_800 }), true);
+  assert.equal(isCardShape({ width: 180, height: 90, contourArea: 12_000, frameArea: 76_800 }), true);
+  assert.equal(isCardShape({ width: 15, height: 10, contourArea: 140, frameArea: 76_800 }), false);
   assert.equal(isCardShape({ width: 160, height: 100, contourArea: 10_000, frameArea: 76_800 }), false);
 }
 

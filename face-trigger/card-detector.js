@@ -5,7 +5,7 @@ export function isCardShape({ width, height, contourArea, frameArea }) {
   const ratio = Math.max(width, height) / Math.min(width, height);
   const areaRatio = contourArea / frameArea;
   const fillRatio = contourArea / (width * height);
-  return ratio >= 1.35 && ratio <= 1.85 && areaRatio >= 0.04 && areaRatio <= 0.75 && fillRatio >= 0.82;
+  return ratio >= 1.15 && ratio <= 2.2 && areaRatio >= 0.008 && areaRatio <= 0.92 && fillRatio >= 0.65;
 }
 
 export function findCardInCanvas(canvas, cv) {
