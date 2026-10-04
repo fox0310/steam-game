@@ -32,6 +32,14 @@ npm run start:eye-gaze
 
 建置／檢查：`npm run build:vehicles`、`npm run test:vehicles`、`npm run playtest:vehicles`。完整操作見 `eye-gaze-games/vehicles/README.md`。
 
+## 香港日月追視
+
+第三款遊戲位於 `eye-gaze-games/day-night/`。簡潔香港城市場景保留大片天空；太陽沿上半圓由左至右，抵達右邊後消失，同時左邊出現月亮及夜景。每次交接後等待學生重新跟望，游標在目標上才移動，離開即停。
+
+日間播放原創輕快音樂，夜間播放原創柔和音樂；老師可調音量、靜音及暫停。公開網址：[香港日月追視](https://fox0310.github.io/steam-game/eye-gaze-games/day-night/)。亦可雙擊 `eye-gaze-games/day-night/香港日月追視_單檔版.html` 離線使用，內含場景及兩段音樂。
+
+建置／檢查：`npm run build:day-night`、`npm run test:day-night`、`npm run playtest:day-night`。本機沿用 `npm run start:eye-gaze`。完整操作及素材來源見 `eye-gaze-games/day-night/README.md`。
+
 ## 人臉音樂觸發器
 
 固定網址：`https://fox0310.github.io/steam-game/`
@@ -57,7 +65,7 @@ npm run start:face-trigger
 
 不要直接雙擊 `face-trigger/index.html`。`file://` 模式會被瀏覽器阻擋，聲音及相機不能正常使用。
 
-GitHub 首次設定：進入 repo `Settings → Pages → Build and deployment`，將來源設為 `GitHub Actions`。推送 `main` 後，workflow 只會發佈 `face-trigger/`，不用長開 Mac。
+GitHub 首次設定：進入 repo `Settings → Pages → Build and deployment`，將來源設為 `GitHub Actions`。推送 `main` 後，workflow 會發佈 `face-trigger/` 及三款眼動遊戲的指定檔案，不用長開 Mac。
 
 手機／平板首次使用：
 

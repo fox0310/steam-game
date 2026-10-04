@@ -19,7 +19,10 @@
     "playtest:eye-gaze": "playwright test --config eye-gaze-games/athletics/playwright.config.cjs --reporter=line",
     "build:vehicles": "node eye-gaze-games/vehicles/build.cjs",
     "test:vehicles": "node eye-gaze-games/vehicles/self-check.mjs",
-    "playtest:vehicles": "playwright test --config eye-gaze-games/vehicles/playwright.config.cjs --reporter=line"
+    "playtest:vehicles": "playwright test --config eye-gaze-games/vehicles/playwright.config.cjs --reporter=line",
+    "build:day-night": "node eye-gaze-games/day-night/build.cjs",
+    "test:day-night": "node eye-gaze-games/day-night/self-check.mjs",
+    "playtest:day-night": "playwright test --config eye-gaze-games/day-night/playwright.config.cjs --reporter=line"
   },
   "engines": {
     "node": ">=20"

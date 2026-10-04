@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-Hant-HK">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f4f3eb"><title>日月追視 · 眼動遊戲室</title><link rel="stylesheet" href="./styles.css"></head>
+<body data-celestial="sun">
+<header class="topbar"><div class="brand"><span class="brand-mark" aria-hidden="true">☼</span><div><span class="eyebrow">眼動遊戲室 · 第三站</span><h1>日月追視</h1></div></div><div class="tools"><button id="focus" aria-pressed="false">專注畫面</button><button id="fullscreen">全螢幕</button><button id="settings" aria-expanded="true">老師設定</button></div></header>
+<main>
+<aside id="panel" aria-label="老師設定">
+<div class="panel-heading"><span class="eyebrow">日間到夜晚 · 跟望再出發</span><h2>太陽與月亮</h2></div>
+<div class="lesson"><span>☀ 太陽由左到右</span><span>☾ 月亮在左邊接力</span></div>
+<label for="duration">每段速度 <output id="speedout">慢速 · 40 秒</output></label><input id="duration" type="range" min="16" max="80" step="4" value="40"><div class="range-labels"><span>較快</span><span>較慢</span></div>
+<label for="size">太陽／月亮大小 <output id="sizeout">標準</output></label><input id="size" type="range" min="8" max="16" step="1" value="10">
+<div class="selects"><label>完成目標<select id="rounds"><option value="1">1 組日月</option><option value="2">2 組日月</option><option value="3">3 組日月</option></select></label></div>
+<label class="check"><input type="checkbox" id="guide">顯示上半圓提示</label><label class="check"><input type="checkbox" id="sound" checked>背景音樂及完成音效</label>
+<label for="volume">音量 <output id="volumeout">25%</output></label><input id="volume" type="range" min="0" max="70" step="5" value="25">
+<p class="teacher-note">先按「準備開始」。望住太陽或月亮才移動，離開即停。太陽到右邊後，左邊的月亮會等待學生再跟望。</p><p class="teacher-note">日間音樂較歡樂；夜間音樂較柔和。音樂在活動開始後播放，老師暫停時停止。</p><p id="soundnotice" class="teacher-note" hidden></p>
+</aside>
+<section class="play" aria-label="日月追視遊戲">
+<div class="play-heading"><div><span class="eyebrow" id="phase-label">日間 · 太陽</span><h2 id="instruction">望住太陽，從左邊出發。</h2></div><span class="mode-pill" id="music-label">日間 · 歡樂音樂</span></div>
+<div class="scene" id="scene"><div class="field" id="field">
+<img id="city" class="skyline" src="./assets/hong-kong.png" alt="簡潔香港維多利亞港城市剪影" draggable="false">
+<svg id="guide-layer" viewBox="0 0 1000 720" aria-hidden="true" hidden><path id="route-path" d="M150 460 A350 350 0 0 1 850 460"/></svg>
+<div id="runner" role="img" aria-label="跟望太陽" style="left:15%;top:63.89%"><img id="sun" src="./assets/sun.svg" alt="太陽" draggable="false"><img id="moon" src="./assets/moon.svg" alt="月亮" draggable="false" hidden></div>
+<div id="celebration" hidden role="status"><span aria-hidden="true">✦</span><h2>完成日月追視！</h2><p>休息一下，再一起出發。</p></div>
+</div></div>
+<div class="activity-bar"><span id="status" role="status">準備好，先由老師按開始。</span><span id="counter">0 / 1 組</span></div><progress id="progress" max="1" value="0" aria-label="日月追視活動進度"></progress>
+<div class="play-controls"><button id="start" class="primary" disabled>▶ 準備開始</button><button id="reset">回到日間</button><span class="key-hint">空白鍵：開始／暫停</span></div>
+<p id="load-error" role="alert" hidden>場景或目標圖片無法載入，請重新開啟。</p>
+</section>
+</main><footer>日間 · 夜晚 · 望住才出發 <span>由老師觀察學生追視表現</span></footer>
+<audio id="music-sun" src="./assets/daytime.wav" preload="none" hidden></audio><audio id="music-moon" src="./assets/nighttime.wav" preload="none" hidden></audio>
+<script type="module" src="./app.js"></script>
+</body></html>
