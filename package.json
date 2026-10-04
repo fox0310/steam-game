@@ -12,7 +12,11 @@
     "test:rocket": "node rocket-game/self-check.mjs",
     "playtest:rocket": "playwright test rocket-game/playtest.spec.js --browser=chromium --reporter=line",
     "test:face-trigger": "node face-trigger/self-check.mjs",
-    "playtest:face-trigger": "playwright test --config face-trigger/playwright.config.js --reporter=line"
+    "playtest:face-trigger": "playwright test --config face-trigger/playwright.config.js --reporter=line",
+    "start:eye-gaze": "python3 -m http.server 5220 --bind 127.0.0.1",
+    "build:eye-gaze": "node eye-gaze-games/athletics/build.cjs",
+    "test:eye-gaze": "node eye-gaze-games/athletics/self-check.mjs",
+    "playtest:eye-gaze": "playwright test --config eye-gaze-games/athletics/playwright.config.cjs --reporter=line"
   },
   "engines": {
     "node": ">=20"

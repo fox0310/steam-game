@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, mkdtempSync, rmSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   DEFAULT_SETTINGS,
   SOUND_OPTIONS,
@@ -232,7 +236,17 @@ function testDeploymentOwners() {
   assert.equal(existsSync(workflowUrl), true);
   const workflow = readFileSync(workflowUrl, "utf8");
   const readme = readFileSync(readmeUrl, "utf8");
-  assert.equal(workflow.includes("path: face-trigger"), true);
+  assert.equal(workflow.includes('path: ${{ runner.temp }}/classroom-pages'), true);
+  const output = mkdtempSync(join(tmpdir(), "classroom-pages-check-"));
+  const root = fileURLToPath(new URL("../", import.meta.url));
+  try {
+    execFileSync(process.execPath, [join(root, "eye-gaze-games/build-pages.cjs"), output]);
+    for (const name of ["index.html", "app.js", "service-worker.js", "manifest.webmanifest", "assets/audio/octopus-card.m4a"])
+      assert.deepEqual(readFileSync(join(output, name)), readFileSync(join(root, "face-trigger", name)));
+    for (const name of ["index.html", "app.js", "track.mjs", "styles.css", "assets/runner.png", "assets/stadium.png"])
+      assert.deepEqual(readFileSync(join(output, "eye-gaze-games/athletics", name)), readFileSync(join(root, "eye-gaze-games/athletics", name)));
+    assert.equal(existsSync(join(output, "assets/eye-gaze")), false);
+  } finally { rmSync(output, { recursive: true, force: true }); }
   assert.equal(workflow.includes("actions/deploy-pages@v4"), true);
   assert.equal(readme.includes("https://fox0310.github.io/steam-game/"), true);
 }

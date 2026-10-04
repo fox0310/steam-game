@@ -10,6 +10,20 @@
 
 - `face-trigger/`：手機及平板可使用同一 QR Code 進入、各自獨立運行的人臉／揮手／卡片音訊觸發器
 
+## 眼動運動場追視
+
+第一款眼動網站遊戲位於 `eye-gaze-games/athletics/`：游標碰到運動員立即跑，離開即停。提供全圈、上半圈、下半圈，跑步節奏聲及終點慶祝音效。
+
+```bash
+npm run start:eye-gaze
+```
+
+開啟 `http://127.0.0.1:5220/eye-gaze-games/athletics/`。老師先按「準備開始」啟用聲音；TD Control 需持續輸出瀏覽器游標位置。
+
+亦可直接雙擊 `eye-gaze-games/athletics/運動場追視_單檔版.html`；這個版本含兩張 PNG 及所有程式，不需連線。
+
+`npm run test:eye-gaze` 及 `npm run playtest:eye-gaze` 驗證路線、游標追視、音效及單檔開啟。GitHub Pages：[開啟運動場追視](https://fox0310.github.io/steam-game/eye-gaze-games/athletics/)。完整操作見 `eye-gaze-games/athletics/README.md`。
+
 ## 人臉音樂觸發器
 
 固定網址：`https://fox0310.github.io/steam-game/`
