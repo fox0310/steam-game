@@ -24,6 +24,14 @@ npm run start:eye-gaze
 
 `npm run test:eye-gaze` 及 `npm run playtest:eye-gaze` 驗證路線、游標追視、音效及單檔開啟。GitHub Pages：[開啟運動場追視](https://fox0310.github.io/steam-game/eye-gaze-games/athletics/)。完整操作見 `eye-gaze-games/athletics/README.md`。
 
+## 交通工具橢圓追視
+
+第二款遊戲位於 `eye-gaze-games/vehicles/`。老師按圖片選擇的士、貨車或黃色校巴，以及全圈、上半圈或下半圈；游標碰到車輛即移動，離開即停，完成後播放慶祝聲。
+
+公開網址：[交通工具追視](https://fox0310.github.io/steam-game/eye-gaze-games/vehicles/)。本機沿用 `npm run start:eye-gaze`；亦可雙擊 `eye-gaze-games/vehicles/交通工具追視_單檔版.html` 離線使用。
+
+建置／檢查：`npm run build:vehicles`、`npm run test:vehicles`、`npm run playtest:vehicles`。完整操作見 `eye-gaze-games/vehicles/README.md`。
+
 ## 人臉音樂觸發器
 
 固定網址：`https://fox0310.github.io/steam-game/`

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-Hant-HK">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f4f3eb"><title>交通工具追視 · 眼動遊戲室</title><link rel="stylesheet" href="./styles.css"></head>
+<body>
+<header class="topbar"><div class="brand"><span class="brand-mark" aria-hidden="true">◎</span><div><span class="eyebrow">眼動遊戲室 · 第二站</span><h1>交通工具追視</h1></div></div><div class="tools"><button id="focus" aria-pressed="false">專注畫面</button><button id="fullscreen">全螢幕</button><button id="settings" aria-expanded="true">老師設定</button></div></header>
+<main>
+<aside id="panel" aria-label="老師設定">
+<div class="panel-heading"><span class="eyebrow">先選車，再一起出發</span><h2>選擇交通工具</h2></div>
+<div class="vehicles" role="group" aria-label="交通工具圖片">
+<button data-vehicle="taxi" aria-pressed="true"><img src="./assets/taxi.png" alt=""><span>的士</span></button>
+<button data-vehicle="truck" aria-pressed="false"><img src="./assets/truck.png" alt=""><span>貨車</span></button>
+<button data-vehicle="schoolbus" aria-pressed="false"><img src="./assets/schoolbus.png" alt=""><span>黃色校巴</span></button>
+</div><h3 class="route-title">選一條路線</h3>
+<div class="routes" role="group" aria-label="追視路線">
+<button data-route="full" aria-pressed="true"><svg viewBox="0 0 80 44" aria-hidden="true"><ellipse cx="40" cy="22" rx="35" ry="16"/></svg><span>全圓追視<small>行駛完整一圈</small></span></button>
+<button data-route="upper" aria-pressed="false"><svg viewBox="0 0 80 44" aria-hidden="true"><path d="M5 30 A35 16 0 0 1 75 30"/></svg><span>上半圓<small>沿上半邊賽道</small></span></button>
+<button data-route="lower" aria-pressed="false"><svg viewBox="0 0 80 44" aria-hidden="true"><path d="M5 14 A35 16 0 0 0 75 14"/></svg><span>下半圓<small>沿下半邊賽道</small></span></button>
+</div>
+<label for="duration">移動速度 <output id="speedout">慢速 · 40 秒</output></label><input id="duration" type="range" min="16" max="80" step="4" value="40"><div class="range-labels"><span>較快</span><span>較慢</span></div>
+<label for="size">交通工具大小 <output id="sizeout">標準</output></label><input id="size" type="range" min="10" max="22" step="1" value="14">
+<div class="selects"><label>完成目標<select id="laps"><option value="1">1 圈／段</option><option value="2">2 圈／段</option><option value="3">3 圈／段</option></select></label><label>移動方向<select id="direction"><option value="forward">正向</option><option value="reverse">反向</option></select></label></div>
+<label class="check"><input type="checkbox" id="guide">顯示路線提示</label><label class="check"><input type="checkbox" id="sound" checked>行駛及慶祝音效</label>
+<label for="volume">音量 <output id="volumeout">30%</output></label><input id="volume" type="range" min="0" max="70" step="5" value="30">
+<p class="teacher-note">先按「準備開始」。學生把眼動游標移到交通工具上便會移動，離開即停。</p><p id="soundnotice" class="teacher-note" hidden></p>
+</aside>
+<section class="play" aria-label="追視遊戲">
+<div class="play-heading"><div><span class="eyebrow" id="route-label">全圓追視</span><h2>望住交通工具，一起出發。</h2></div><span class="mode-pill">游標碰到即行</span></div>
+<div class="scene" id="scene">
+<div class="field" id="field"><img id="stadium" class="stadium" src="./assets/oval-road.svg" alt="橢圓形公路賽道" draggable="false">
+<svg id="guide-layer" viewBox="0 0 1000 620" aria-hidden="true" hidden><path id="route-path"/></svg>
+<div id="runner" role="img" aria-label="跟隨這架的士" style="left:13%;top:50%"><div class="runner-disc"><img id="portrait" src="./assets/taxi.png" alt="的士" draggable="false"></div></div>
+<div id="celebration" hidden role="status"><span aria-hidden="true">✦</span><h2>完成！</h2><p>休息一下，再一起出發。</p></div>
+</div></div>
+<div class="activity-bar"><span id="status" role="status">準備好，先由老師按開始。</span><span id="counter">0 / 1 圈</span></div><progress id="progress" max="1" value="0" aria-label="跑道活動進度"></progress>
+<div class="play-controls"><button id="start" class="primary" disabled><span aria-hidden="true">▶</span> 準備開始</button><button id="reset">回起點</button><span class="key-hint">空白鍵：開始／暫停</span></div>
+<p id="load-error" role="alert" hidden>圖片無法載入。請重新開啟，或使用完整的遊戲資料夾。</p>
+</section>
+</main><footer>跟望 · 停一停 · 再出發 <span>由老師觀察學生追視表現</span></footer>
+<script type="module" src="./app.js"></script>
+</body></html>

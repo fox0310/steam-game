@@ -245,6 +245,10 @@ function testDeploymentOwners() {
       assert.deepEqual(readFileSync(join(output, name)), readFileSync(join(root, "face-trigger", name)));
     for (const name of ["index.html", "app.js", "track.mjs", "styles.css", "assets/runner.png", "assets/stadium.png"])
       assert.deepEqual(readFileSync(join(output, "eye-gaze-games/athletics", name)), readFileSync(join(root, "eye-gaze-games/athletics", name)));
+    for (const name of ["index.html", "app.js", "track.mjs", "styles.css", "assets/oval-road.svg", "assets/taxi.png", "assets/truck.png", "assets/schoolbus.png"]) {
+      assert.equal(existsSync(join(output, "eye-gaze-games/vehicles", name)), true, "Vehicle game must be published");
+      assert.deepEqual(readFileSync(join(output, "eye-gaze-games/vehicles", name)), readFileSync(join(root, "eye-gaze-games/vehicles", name)));
+    }
     assert.equal(existsSync(join(output, "assets/eye-gaze")), false);
   } finally { rmSync(output, { recursive: true, force: true }); }
   assert.equal(workflow.includes("actions/deploy-pages@v4"), true);

@@ -1,0 +1,10 @@
+const fs=require('node:fs');
+const path=require('node:path');
+const read=name=>fs.readFileSync(path.join(__dirname,name),'utf8');
+const image=name=>'data:image/'+(name.endsWith('.svg')?'svg+xml':'png')+';base64,'+fs.readFileSync(path.join(__dirname,'assets',name)).toString('base64');
+const shared=fs.readFileSync(path.join(__dirname,'../athletics/styles.css'),'utf8');
+let html=read('index.html').replace('<link rel="stylesheet" href="./styles.css">',()=>'<style>'+shared+'\n'+read('styles.css').replace(/^@import[^\n]*\n/,'')+'</style>');
+for(const name of ['oval-road.svg','taxi.png','truck.png','schoolbus.png'])html=html.replaceAll('./assets/'+name,()=>image(name));
+const code=read('track.mjs').replace(/^export /gm,'')+'\n'+read('app.js').replace(/^import .*\n/,'');
+html=html.replace('<script type="module" src="./app.js"></script>',()=>'<script>'+code.replace(/<\/script/gi,'<\\/script')+'</script>');
+const target=path.join(__dirname,'交通工具追視_單檔版.html');fs.writeFileSync(target,html);console.log('Built standalone HTML:',target);

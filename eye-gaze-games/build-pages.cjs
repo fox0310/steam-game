@@ -8,7 +8,8 @@ fs.mkdirSync(target,{recursive:true});
 // Keep the existing camera app at the root; publish only explicit game files.
 fs.cpSync(path.join(root,'face-trigger'),target,{recursive:true,filter:src=>!/(?:playtest\.spec\.js|playwright\.config\.js|self-check\.mjs|server\.cjs|package\.json)$/.test(src)});
 const game='eye-gaze-games/athletics';
-for(const relative of ['eye-gaze-games/index.html',...['index.html','styles.css','app.js','track.mjs','assets/stadium.png','assets/runner.png'].map(name=>game+'/'+name)]){
+const vehicles='eye-gaze-games/vehicles';
+for(const relative of ['eye-gaze-games/index.html',...['index.html','styles.css','app.js','track.mjs','assets/stadium.png','assets/runner.png'].map(name=>game+'/'+name),...['index.html','styles.css','app.js','track.mjs','assets/oval-road.svg','assets/taxi.png','assets/truck.png','assets/schoolbus.png'].map(name=>vehicles+'/'+name)]){
   const output=path.join(target,relative);fs.mkdirSync(path.dirname(output),{recursive:true});fs.copyFileSync(path.join(root,relative),output);
 }
 fs.writeFileSync(path.join(target,'.nojekyll'),'');
