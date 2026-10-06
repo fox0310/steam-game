@@ -1,0 +1,20 @@
+{
+  "self": "./assets/audio/self.wav",
+  "want": "./assets/audio/want.wav",
+  "go": "./assets/audio/go.wav",
+  "drink": "./assets/audio/drink.wav",
+  "toilet": "./assets/audio/toilet.wav",
+  "need": "./assets/audio/need.wav",
+  "help": "./assets/audio/help.wav",
+  "rest": "./assets/audio/rest.wav",
+  "ask-help": "./assets/audio/ask-help.wav",
+  "sentence-water": "./assets/audio/sentence-water.wav",
+  "sentence-toilet": "./assets/audio/sentence-toilet.wav",
+  "sentence-rest": "./assets/audio/sentence-rest.wav",
+  "sentence-help": "./assets/audio/sentence-help.wav",
+  "prompt-water": "./assets/audio/prompt-water.wav",
+  "prompt-toilet": "./assets/audio/prompt-toilet.wav",
+  "prompt-rest": "./assets/audio/prompt-rest.wav",
+  "prompt-help": "./assets/audio/prompt-help.wav",
+  "retry": "./assets/audio/retry.wav"
+}

@@ -1,0 +1,20 @@
+{
+  "self": "我",
+  "want": "想",
+  "go": "去",
+  "drink": "飲水",
+  "toilet": "廁所",
+  "need": "需要",
+  "help": "幫忙",
+  "rest": "休息",
+  "ask-help": "請幫我。",
+  "sentence-water": "我想飲水。",
+  "sentence-toilet": "我想去廁所。",
+  "sentence-rest": "我想休息。",
+  "sentence-help": "我需要幫忙。",
+  "prompt-water": "口渴了，想飲水。請用圖字卡告訴老師。",
+  "prompt-toilet": "想去廁所，怎樣告訴老師？",
+  "prompt-rest": "有點累了，想休息。請用圖字卡告訴老師。",
+  "prompt-help": "遇到困難，需要成人幫忙。請用圖字卡告訴老師。",
+  "retry": "再看看圖字卡的次序。你可以改一改，或者按請幫我。"
+}

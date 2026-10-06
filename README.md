@@ -40,6 +40,14 @@ npm run start:eye-gaze
 
 建置／檢查：`npm run build:day-night`、`npm run test:day-night`、`npm run playtest:day-night`。本機沿用 `npm run start:eye-gaze`。完整操作及素材來源見 `eye-gaze-games/day-night/README.md`。
 
+## 圖字卡組句（iPad）
+
+第四款遊戲位於 `eye-gaze-games/sentence-cards/`。iPad 用 Safari 開啟 [圖字卡組句](https://fox0310.github.io/steam-game/eye-gaze-games/sentence-cards/)；橫向及直向均可點選大圖字卡，不用拖拉。
+
+老師選擇飲水、如廁、休息或求助，示範後讓學生排列句子。內置 18 段粵語音檔、句子提示、特大圖卡及音量設定；學生可刪卡、重新排列或按「請幫我」，再以聲音、指讀或展示句子向成人表達。
+
+建置／檢查：`npm run build:sentence-cards`、`npm run test:sentence-cards`、`npm run playtest:sentence-cards`。本機沿用 `npm run start:eye-gaze`。電腦亦可雙擊 `eye-gaze-games/sentence-cards/圖字卡組句_單檔版.html` 離線使用；iPad 使用上述 HTTPS 網址。完整操作見 `eye-gaze-games/sentence-cards/README.md`。
+
 ## 人臉音樂觸發器
 
 固定網址：`https://fox0310.github.io/steam-game/`
@@ -65,7 +73,7 @@ npm run start:face-trigger
 
 不要直接雙擊 `face-trigger/index.html`。`file://` 模式會被瀏覽器阻擋，聲音及相機不能正常使用。
 
-GitHub 首次設定：進入 repo `Settings → Pages → Build and deployment`，將來源設為 `GitHub Actions`。推送 `main` 後，workflow 會發佈 `face-trigger/` 及三款眼動遊戲的指定檔案，不用長開 Mac。
+GitHub 首次設定：進入 repo `Settings → Pages → Build and deployment`，將來源設為 `GitHub Actions`。推送 `main` 後，workflow 會發佈 `face-trigger/` 及四款課堂活動的指定檔案，不用長開 Mac。
 
 手機／平板首次使用：
 

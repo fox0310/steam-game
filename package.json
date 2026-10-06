@@ -22,7 +22,10 @@
     "playtest:vehicles": "playwright test --config eye-gaze-games/vehicles/playwright.config.cjs --reporter=line",
     "build:day-night": "node eye-gaze-games/day-night/build.cjs",
     "test:day-night": "node eye-gaze-games/day-night/self-check.mjs",
-    "playtest:day-night": "playwright test --config eye-gaze-games/day-night/playwright.config.cjs --reporter=line"
+    "playtest:day-night": "playwright test --config eye-gaze-games/day-night/playwright.config.cjs --reporter=line",
+    "build:sentence-cards": "node eye-gaze-games/sentence-cards/build.cjs",
+    "test:sentence-cards": "node eye-gaze-games/sentence-cards/self-check.mjs",
+    "playtest:sentence-cards": "playwright test --config eye-gaze-games/sentence-cards/playwright.config.cjs --reporter=line"
   },
   "engines": {
     "node": ">=20"
