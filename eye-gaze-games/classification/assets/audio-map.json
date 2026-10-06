@@ -1,0 +1,23 @@
+{
+  "prompt-animal": "./assets/audio/prompt-animal.wav",
+  "prompt-plant": "./assets/audio/prompt-plant.wav",
+  "prompt-object": "./assets/audio/prompt-object.wav",
+  "correct-cat": "./assets/audio/correct-cat.wav",
+  "wrong-cat": "./assets/audio/wrong-cat.wav",
+  "correct-dog": "./assets/audio/correct-dog.wav",
+  "wrong-dog": "./assets/audio/wrong-dog.wav",
+  "correct-bird": "./assets/audio/correct-bird.wav",
+  "wrong-bird": "./assets/audio/wrong-bird.wav",
+  "correct-flower": "./assets/audio/correct-flower.wav",
+  "wrong-flower": "./assets/audio/wrong-flower.wav",
+  "correct-tree": "./assets/audio/correct-tree.wav",
+  "wrong-tree": "./assets/audio/wrong-tree.wav",
+  "correct-cactus": "./assets/audio/correct-cactus.wav",
+  "wrong-cactus": "./assets/audio/wrong-cactus.wav",
+  "correct-toy": "./assets/audio/correct-toy.wav",
+  "wrong-toy": "./assets/audio/wrong-toy.wav",
+  "correct-ball": "./assets/audio/correct-ball.wav",
+  "wrong-ball": "./assets/audio/wrong-ball.wav",
+  "correct-chair": "./assets/audio/correct-chair.wav",
+  "wrong-chair": "./assets/audio/wrong-chair.wav"
+}

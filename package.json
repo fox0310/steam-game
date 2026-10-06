@@ -25,7 +25,10 @@
     "playtest:day-night": "playwright test --config eye-gaze-games/day-night/playwright.config.cjs --reporter=line",
     "build:sentence-cards": "node eye-gaze-games/sentence-cards/build.cjs",
     "test:sentence-cards": "node eye-gaze-games/sentence-cards/self-check.mjs",
-    "playtest:sentence-cards": "playwright test --config eye-gaze-games/sentence-cards/playwright.config.cjs --reporter=line"
+    "playtest:sentence-cards": "playwright test --config eye-gaze-games/sentence-cards/playwright.config.cjs --reporter=line",
+    "build:classification": "node eye-gaze-games/classification/build.cjs",
+    "test:classification": "node eye-gaze-games/classification/self-check.mjs",
+    "playtest:classification": "playwright test --config eye-gaze-games/classification/playwright.config.cjs --reporter=line"
   },
   "engines": {
     "node": ">=20"

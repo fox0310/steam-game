@@ -48,6 +48,16 @@ npm run start:eye-gaze
 
 建置／檢查：`npm run build:sentence-cards`、`npm run test:sentence-cards`、`npm run playtest:sentence-cards`。本機沿用 `npm run start:eye-gaze`。電腦亦可雙擊 `eye-gaze-games/sentence-cards/圖字卡組句_單檔版.html` 離線使用；iPad 使用上述 HTTPS 網址。完整操作見 `eye-gaze-games/sentence-cards/README.md`。
 
+## 動物、植物及死物分類配對
+
+第五款遊戲位於 `eye-gaze-games/classification/`，公開網址：[分類配對「找一找」](https://fox0310.github.io/steam-game/eye-gaze-games/classification/)。
+
+老師選動物、植物或死物；九張大型原創圖片每 5 秒切換。學生按空白鍵、輸出空白鍵的拍掣或大按鈕回答。每圖接受一次；按住不重複。答對及答錯均按圖片播放粵語類別及辨認特徵，答對加獎勵聲，答錯鼓勵再試。
+
+依 FOX 選擇，作答後停留本圖直到約 7 秒完整講解結束，再換下一張並恢復 5 秒節奏。植物會成長，但不會像動物自行走動或叫；老師說明保留植物會對刺激反應的科學事實。
+
+建置／檢查：`npm run build:classification`、`npm run test:classification`、`npm run playtest:classification`。本機沿用 `npm run start:eye-gaze`。電腦離線版：`eye-gaze-games/classification/分類配對_單檔版.html`。詳見 `eye-gaze-games/classification/README.md`。
+
 ## 人臉音樂觸發器
 
 固定網址：`https://fox0310.github.io/steam-game/`
@@ -73,7 +83,7 @@ npm run start:face-trigger
 
 不要直接雙擊 `face-trigger/index.html`。`file://` 模式會被瀏覽器阻擋，聲音及相機不能正常使用。
 
-GitHub 首次設定：進入 repo `Settings → Pages → Build and deployment`，將來源設為 `GitHub Actions`。推送 `main` 後，workflow 會發佈 `face-trigger/` 及四款課堂活動的指定檔案，不用長開 Mac。
+GitHub 首次設定：進入 repo `Settings → Pages → Build and deployment`，將來源設為 `GitHub Actions`。推送 `main` 後，workflow 會發佈 `face-trigger/` 及五款課堂活動的指定檔案，不用長開 Mac。
 
 手機／平板首次使用：
 

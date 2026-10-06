@@ -12,8 +12,11 @@ const vehicles='eye-gaze-games/vehicles';
 const dayNight='eye-gaze-games/day-night';
 const sentences='eye-gaze-games/sentence-cards';
 const sentenceAudio=Object.values(JSON.parse(fs.readFileSync(path.join(root,sentences,'assets/audio-map.json'),'utf8'))).map(name=>name.slice(2));
+const classification='eye-gaze-games/classification';
+const classificationAudio=Object.values(JSON.parse(fs.readFileSync(path.join(root,classification,'assets/audio-map.json'),'utf8'))).map(name=>name.slice(2));
+const classificationFiles=['index.html','styles.css','app.js','model.mjs',...['cat','dog','bird','flower','tree','cactus','toy','ball','chair'].map(name=>'assets/'+name+'.svg'),...classificationAudio];
 const sentenceFiles=['index.html','styles.css','app.js','model.mjs',...['self','want','go','drink','toilet','need','help','rest'].map(name=>'assets/'+name+'.svg'),...sentenceAudio];
-for(const relative of ['eye-gaze-games/index.html',...['index.html','styles.css','app.js','track.mjs','assets/stadium.png','assets/runner.png'].map(name=>game+'/'+name),...['index.html','styles.css','app.js','track.mjs','assets/oval-road.svg','assets/taxi.png','assets/truck.png','assets/schoolbus.png'].map(name=>vehicles+'/'+name),...['index.html','styles.css','app.js','track.mjs','assets/hong-kong.png','assets/sun.svg','assets/moon.svg','assets/daytime.wav','assets/nighttime.wav'].map(name=>dayNight+'/'+name),...sentenceFiles.map(name=>sentences+'/'+name)]){
+for(const relative of ['eye-gaze-games/index.html',...['index.html','styles.css','app.js','track.mjs','assets/stadium.png','assets/runner.png'].map(name=>game+'/'+name),...['index.html','styles.css','app.js','track.mjs','assets/oval-road.svg','assets/taxi.png','assets/truck.png','assets/schoolbus.png'].map(name=>vehicles+'/'+name),...['index.html','styles.css','app.js','track.mjs','assets/hong-kong.png','assets/sun.svg','assets/moon.svg','assets/daytime.wav','assets/nighttime.wav'].map(name=>dayNight+'/'+name),...sentenceFiles.map(name=>sentences+'/'+name),...classificationFiles.map(name=>classification+'/'+name)]){
   const output=path.join(target,relative);fs.mkdirSync(path.dirname(output),{recursive:true});fs.copyFileSync(path.join(root,relative),output);
 }
 fs.writeFileSync(path.join(target,'.nojekyll'),'');

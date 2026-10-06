@@ -260,6 +260,13 @@ function testDeploymentOwners() {
       assert.deepEqual(readFileSync(join(output, sentenceFolder, name)), readFileSync(join(root, sentenceFolder, name)), "Sentence cards and Cantonese clips must be published");
     assert.equal(existsSync(join(output, sentenceFolder, "assets/make-audio.py")), false);
     assert.equal(readFileSync(join(output, "eye-gaze-games/index.html"), "utf8").includes('./sentence-cards/'), true);
+    const classificationFolder = "eye-gaze-games/classification";
+    const classificationClips = Object.values(JSON.parse(readFileSync(join(root, classificationFolder, "assets/audio-map.json"), "utf8"))).map(name => name.slice(2));
+    const classificationFiles = ["index.html", "app.js", "model.mjs", "styles.css", ...["cat", "dog", "bird", "flower", "tree", "cactus", "toy", "ball", "chair"].map(name => "assets/" + name + ".svg"), ...classificationClips];
+    for (const name of classificationFiles)
+      assert.deepEqual(readFileSync(join(output, classificationFolder, name)), readFileSync(join(root, classificationFolder, name)), "Classification pictures and explanations must be published");
+    assert.equal(existsSync(join(output, classificationFolder, "assets/make-audio.py")), false);
+    assert.equal(readFileSync(join(output, "eye-gaze-games/index.html"), "utf8").includes('./classification/'), true);
     assert.equal(existsSync(join(output, "eye-gaze-games/day-night/music.py")), false);
     assert.equal(existsSync(join(output, "assets/eye-gaze")), false);
   } finally { rmSync(output, { recursive: true, force: true }); }
