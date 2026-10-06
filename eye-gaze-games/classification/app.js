@@ -20,7 +20,7 @@ function play(key,done){
  function failed(){
   if(generation!==voiceGeneration)return;
   audio.pause();document.body.dataset.voice='off';$('audio-notice').hidden=false;
-  if(done&&phase==='feedback'){$('continue').hidden=false;$('status').textContent='請看辨認特徵，再按「繼續看圖片」。';}
+  if(done&&phase==='feedback'){$('continue').hidden=false;$('status').textContent='請看辨認特徵，再按「繼續看圖片」。';$('status').hidden=false;}
  }
  audio.onerror=failed;
  audio.play().then(()=>{if(generation===voiceGeneration)$('audio-notice').hidden=true;}).catch(failed);
@@ -34,11 +34,12 @@ function render(){
  document.body.dataset.running=String(state.running);document.body.dataset.phase=phase;document.body.dataset.item=item.id;document.body.dataset.category=item.category;document.body.dataset.target=state.target;
  $('target-name').textContent=CATEGORIES[state.target];if($('picture').getAttribute('src')!==icons[item.id])$('picture').src=icons[item.id];$('picture').alt=item.name;$('item-name').textContent=item.name;
  $('answer').disabled=!ready||!state.running||state.answered;$('answer').textContent=phase==='feedback'?'正在講解…':'這是目標 · 空白鍵';
- $('start').disabled=!ready;$('restart').disabled=!ready;$('start').textContent=state.running||phase==='feedback'?'暫停':phase==='ready'?'開始':'繼續';
- $('status').textContent=!ready?'圖片準備中…':phase==='feedback'?'停留本圖，聽完特徵再看下一張。':state.running?'看見目標才按拍掣；每張圖片只答一次。':phase==='ready'?'老師選目標，再按「開始」。':'已暫停，按「繼續」再開始。';
+ $('start').disabled=!ready;$('restart').disabled=!ready;$('start').textContent=phase==='ready'?'開始遊戲':'繼續遊戲';
+ $('status').textContent=!ready?'圖片準備中…':phase==='feedback'||state.running?'':phase==='ready'?'請老師按「老師設定」開始。':'已暫停，請老師按「老師設定」繼續。';
+ $('status').hidden=phase==='feedback'||state.running;
  $('continue').hidden=true;
  const f=state.feedback;$('feedback').hidden=!f;
- if(f){$('feedback').dataset.result=f.correct?'correct':'wrong';$('feedback-picture').src=icons[f.item];$('feedback-picture').alt='剛才作答的'+f.name;$('feedback-title').textContent=(f.correct?'答對了！':'再看看：')+f.name+'是'+CATEGORIES[f.category];$('feedback-feature').textContent=f.features;$('feedback-encourage').textContent=f.correct?'做得好！':'下一張再試一次。';}
+ if(f){$('feedback').dataset.result=f.correct?'correct':'wrong';$('feedback-title').textContent=(f.correct?'答對了！':'再看看：')+f.name+'是'+CATEGORIES[f.category];$('feedback-feature').textContent=f.features;$('feedback-encourage').textContent=f.correct?'做得好！':'下一張再試一次。';}
 }
 function schedule(){
  clearTimeout(timer);if(!state.running)return;
@@ -56,6 +57,7 @@ function answer(){
 }
 function startOrPause(){
  if(!ready)return;
+ stopSpeech();$('teacher-dialog').close();
  if(state.running||phase==='feedback'){halt();return;}
  state=state.answered?advance(state,performance.now()):resume(state,performance.now());phase='playing';render();schedule();$('stage').focus({preventScroll:true});
 }
@@ -72,7 +74,6 @@ $('close-settings').addEventListener('click',()=>{$('teacher-dialog').close();$(
 $('target').addEventListener('change',()=>{settings.target=$('target').value;save();restart();});
 $('sound').addEventListener('change',()=>{settings.sound=$('sound').checked;if(!settings.sound)stopSpeech();save();});
 $('volume').addEventListener('input',()=>{settings.volume=Number($('volume').value);audio.volume=settings.volume/100;$('volume-out').textContent=settings.volume+'%';if(settings.volume===0)stopSpeech();save();});
-$('focus').addEventListener('click',()=>{document.body.classList.toggle('focus');$('focus').setAttribute('aria-pressed',String(document.body.classList.contains('focus')));$('stage').focus({preventScroll:true});});
 function isSpace(event){return event.code==='Space'||event.key===' '||event.key==='Spacebar';}
 function acceptsSpace(event){
  if($('teacher-dialog').open)return false;

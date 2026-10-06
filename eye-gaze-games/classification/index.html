@@ -2,22 +2,20 @@
 <html lang="zh-Hant-HK">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#000000"><title>找一找 · 動物植物死物分類</title><link rel="stylesheet" href="./styles.css"></head>
 <body>
-<header><div><span class="eyebrow">第五站 · 分類配對</span><h1>找一找</h1></div><nav aria-label="老師工具"><button id="focus" aria-pressed="false">專注畫面</button><button id="settings" aria-haspopup="dialog">老師設定</button></nav></header>
+<header><h1>找<span id="target-name">動物</span></h1><button id="settings" aria-haspopup="dialog">老師設定</button></header>
 <main id="stage" tabindex="-1">
- <section class="objective" aria-label="本次目標"><h2>找<span id="target-name">動物</span></h2><button id="prompt">聽目標</button><span id="cadence">每 5 秒換圖片</span></section>
  <figure class="picture"><img id="picture" alt="" draggable="false"><figcaption id="item-name"></figcaption></figure>
- <p id="instruction">看見目標圖片，按空白鍵或拍掣。</p>
- <section id="feedback" class="feedback" aria-live="polite" hidden><img id="feedback-picture" alt=""><div><h2 id="feedback-title"></h2><p id="feedback-feature"></p><p id="feedback-encourage"></p></div></section>
+ <section id="feedback" class="feedback" aria-live="polite" hidden><div><h2 id="feedback-title"></h2><p id="feedback-feature"></p><p id="feedback-encourage"></p></div></section>
  <p id="status" role="status">圖片準備中…</p>
- <div class="actions"><button id="answer" class="primary" disabled>這是目標 · 空白鍵</button><button id="start" disabled>開始</button><button id="restart" disabled>重新開始</button></div>
+ <div class="actions"><button id="answer" class="primary" disabled>這是目標 · 空白鍵</button></div>
  <p id="audio-notice" role="status" hidden>聲音未能播放，請看圖片的特徵說明。</p>
  <button id="continue" hidden>繼續看圖片</button>
 </main>
-<footer><a href="../">返回遊戲室</a><span>空白鍵／拍掣作答 · 也可點按大按鈕</span></footer>
-<dialog id="teacher-dialog" aria-labelledby="teacher-title"><div class="dialog-heading"><h2 id="teacher-title">老師設定</h2><button id="close-settings">完成設定</button></div>
+<dialog id="teacher-dialog" aria-labelledby="teacher-title"><div class="dialog-heading"><h2 id="teacher-title">老師設定</h2><button id="close-settings">返回遊戲</button></div>
  <label for="target">學生要分辨的目標</label><select id="target"><option value="animal">動物</option><option value="plant">植物</option><option value="object">死物</option></select>
  <label class="check"><input type="checkbox" id="sound" checked>播放粵語及答對音效</label>
  <label for="volume">音量 <output id="volume-out">65%</output></label><input id="volume" type="range" min="0" max="100" step="5" value="65">
+ <div class="teacher-actions"><button id="start" class="primary" disabled>開始遊戲</button><button id="restart" disabled>重新開始</button><button id="prompt">聽目標</button><a href="../">返回遊戲室</a></div>
  <section class="teacher-note"><h3>辨認特徵</h3><p><strong>動物：</strong>會成長、活動，會對外界刺激有反應。本遊戲的貓、狗和小鳥亦會叫。</p><p><strong>植物：</strong>會成長，不會像動物自行走動或叫；植物仍會對光線或觸碰等刺激有反應。</p><p><strong>死物：</strong>本遊戲的玩具車、皮球、椅子不會成長，亦不會自己活動或回應呼喚。物件可被人推動，不能只靠「有沒有動」分類。</p></section>
  <p>每張圖片只接受一次作答。拍掣需設定為空白鍵；按下後放開，再回答下一張。老師設定及切換視窗會暫停。</p>
 </dialog>

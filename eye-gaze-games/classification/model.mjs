@@ -30,4 +30,4 @@ export function respond(state){
 export function pause(state){return {...state,running:false};}
 export function resume(state,now){return {...state,running:true,deadline:now+INTERVAL};}
 
-export function advance(state,now){return {...state,index:(state.index+1)%state.order.length,deadline:now+INTERVAL,answered:false,running:true};}
+export function advance(state,now){return {...state,index:(state.index+1)%state.order.length,deadline:now+INTERVAL,answered:false,feedback:null,running:true};}

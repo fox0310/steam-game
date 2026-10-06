@@ -1,7 +1,7 @@
 const {test,expect}=require('@playwright/test');
 const path=require('node:path');
 async function freeze(page){await page.clock.install({time:new Date('2026-10-06T00:00:00Z')});await page.clock.pauseAt(new Date('2026-10-06T00:00:01Z'));}
-async function start(page){await page.locator('#start').click();await expect(page.locator('body')).toHaveAttribute('data-running','true');}
+async function start(page){if(!await page.locator('#teacher-dialog').evaluate(d=>d.open))await page.locator('#settings').click();await page.locator('#start').click();await expect(page.locator('body')).toHaveAttribute('data-running','true');}
 async function target(page,value){await page.locator('#settings').click();await page.locator('#target').selectOption(value);await page.locator('#close-settings').click();}
 async function find(page,id){for(let n=0;n<10;n++){if(await page.locator('body').getAttribute('data-item')===id)return;await page.clock.fastForward(5000);}throw Error('Image missing: '+id);}
 async function audible(page,key){await expect(page.locator('body')).toHaveAttribute('data-voice',key);await expect.poll(()=>page.locator('#speech').evaluate(a=>a.readyState>=2&&!a.paused&&a.currentTime>0)).toBe(true);}
@@ -25,14 +25,14 @@ test('答題停留同一圖直到完整講解結束，再恢復五秒換圖',asy
  await freeze(page);await start(page);await find(page,'cat');await page.keyboard.press('Space');await audible(page,'correct-cat');
  await page.clock.fastForward(20000);await expect(page.locator('body')).toHaveAttribute('data-item','cat');await expect(page.locator('#answer')).toBeDisabled();await expect(page.locator('#speech')).toHaveJSProperty('paused',false);
  await endVoice(page);const next=await page.locator('body').getAttribute('data-item');expect(next).not.toBe('cat');await page.clock.fastForward(4000);await expect(page.locator('body')).toHaveAttribute('data-item',next);await page.clock.fastForward(1000);expect(await page.locator('body').getAttribute('data-item')).not.toBe(next);
- await expect(page.locator('#feedback-title')).toContainText('貓是動物');
+ await expect(page.locator('#feedback')).toBeHidden();
 });
 test('按住拍掣不會重複答題，放開後下一張才接受新按下',async({page})=>{
  await freeze(page);await start(page);await page.keyboard.down('Space');await expect(page.locator('body')).toHaveAttribute('data-phase','feedback');
  const key=await page.locator('body').getAttribute('data-voice');await audible(page,key);await endVoice(page);await page.keyboard.down('Space');await expect(page.locator('body')).toHaveAttribute('data-phase','playing');await page.keyboard.up('Space');await page.keyboard.press('Space');await expect(page.locator('body')).toHaveAttribute('data-phase','feedback');
 });
 test('暫停不換圖亦不接受答案，繼續後完整五秒',async({page})=>{
- await freeze(page);await start(page);const first=await page.locator('body').getAttribute('data-item');await page.locator('#start').click();await page.locator('#stage').focus();await page.keyboard.press('Space');await page.clock.fastForward(40000);await expect(page.locator('body')).toHaveAttribute('data-item',first);await expect(page.locator('#feedback')).toBeHidden();
+ await freeze(page);await start(page);const first=await page.locator('body').getAttribute('data-item');await page.locator('#settings').click();await page.locator('#close-settings').click();await page.locator('#stage').focus();await page.keyboard.press('Space');await page.clock.fastForward(40000);await expect(page.locator('body')).toHaveAttribute('data-item',first);await expect(page.locator('#feedback')).toBeHidden();
  await start(page);await page.clock.fastForward(4999);await expect(page.locator('body')).toHaveAttribute('data-item',first);await page.clock.fastForward(1);expect(await page.locator('body').getAttribute('data-item')).not.toBe(first);
 });
 test('老師設定隔離空白鍵，保存目標與音量，損壞設定回預設',async({page})=>{
@@ -61,7 +61,7 @@ test('橫直向及手機圖片清楚、觸控夠大，沒有橫向溢出',async(
   await page.setViewportSize(viewport);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);const b=await page.locator('#picture').boundingBox();expect(b.height).toBeGreaterThanOrEqual(250);const a=await page.locator('#answer').boundingBox();expect(a.height).toBeGreaterThanOrEqual(72);
   await page.screenshot({path:'/tmp/classification-'+test.info().project.name.replaceAll(' ','-')+'-'+viewport.width+'.png',fullPage:true});
  }
- await page.locator('#focus').click();await expect(page.locator('body')).toHaveClass('focus');await start(page);await page.locator('#answer').tap();await expect(page.locator('body')).toHaveAttribute('data-phase','feedback');expect(errors).toEqual([]);
+ await start(page);await page.locator('#answer').tap();await expect(page.locator('body')).toHaveAttribute('data-phase','feedback');expect(errors).toEqual([]);
 });
 test('單檔版從 file 開啟可用空白鍵回答及播放內置粵語',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('file://'+path.join(__dirname,'分類配對_單檔版.html'));await expect(page.locator('#start')).toBeEnabled();await start(page);const item=await page.locator('body').getAttribute('data-item'),category=await page.locator('body').getAttribute('data-category');await page.keyboard.press('Space');await audible(page,(category==='animal'?'correct-':'wrong-')+item);expect(await page.locator('#speech').getAttribute('src')).toContain('data:audio/wav;');expect(await page.locator('#picture').getAttribute('src')).toContain('data:image/svg+xml;');expect(errors).toEqual([]);
@@ -75,4 +75,15 @@ test('已開始播放後的媒體錯誤亦顯示繼續按鈕，不困在講解',
 test('當前圖片失敗只提示一次，不會無限重試同一圖片',async({page})=>{
  await page.addInitScript(()=>{Math.random=()=>0;});let requests=0;await page.route('**/assets/dog.svg',r=>{requests++;return r.abort();});
  await page.reload({waitUntil:'domcontentloaded'});await expect(page.locator('body')).toHaveAttribute('data-item','dog');await expect(page.locator('#status')).toContainText('圖片未能載入');await page.waitForTimeout(200);expect(requests).toBeLessThanOrEqual(2);await expect(page.locator('#start')).toBeDisabled();
+});
+
+test('學生畫面精簡，只有按老師設定才出現控制',async({page})=>{
+ await expect(page.locator('#teacher-dialog')).not.toBeVisible();
+ await expect(page.locator('#start')).not.toBeVisible();await expect(page.locator('#restart')).not.toBeVisible();await expect(page.locator('#prompt')).not.toBeVisible();
+ await expect(page.locator('main button:visible')).toHaveCount(1);
+ await page.locator('#settings').click();await expect(page.locator('#teacher-dialog')).toBeVisible();await expect(page.locator('#start')).toBeVisible();await expect(page.locator('#restart')).toBeVisible();
+ await page.locator('#start').click();await expect(page.locator('#teacher-dialog')).not.toBeVisible();await expect(page.locator('body')).toHaveAttribute('data-running','true');
+ await expect(page.locator('#stage')).toBeFocused();await expect(page.locator('#status')).not.toBeVisible();
+ await page.locator('#settings').click();await page.locator('#restart').click();await expect(page.locator('body')).toHaveAttribute('data-phase','ready');await expect(page.locator('#teacher-dialog')).toBeVisible();await page.locator('#prompt').click();await audible(page,'prompt-animal');await page.locator('#start').click();await expect(page.locator('body')).toHaveAttribute('data-voice','off');
+ await page.locator('#settings').click();await page.locator('#close-settings').click();await expect(page.locator('body')).toHaveAttribute('data-running','false');
 });

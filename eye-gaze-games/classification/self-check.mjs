@@ -14,6 +14,7 @@ for(const category of Object.keys(CATEGORIES)){
   assert.equal(result.feedback.item,item.id);
   assert.equal(respond(result),result,'One response per image');
   assert.equal(tick(result,5000).answered,false,'Next image accepts a fresh response');
+  assert.equal(tick(result,5000).feedback,null,'Old feedback clears when the picture changes');
  }
  const stopped=pause(state);assert.equal(tick(stopped,9000),stopped);assert.equal(respond(stopped),stopped);
  assert.equal(resume(stopped,20000).deadline,25000,'Resume grants a full five seconds');
