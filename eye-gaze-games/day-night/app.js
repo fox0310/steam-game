@@ -1,4 +1,6 @@
 import {arcPoint,course} from './track.mjs';
+// Use the media playback session on iPad; older browsers keep their default.
+try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch{}
 const $=id=>document.getElementById(id);
 const defaults={duration:40,size:10,rounds:1,guide:false,sound:true,volume:25};
 const storageKey='fox-day-night-settings-v1';let settings={...defaults};

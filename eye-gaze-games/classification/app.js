@@ -1,4 +1,6 @@
 import {CATEGORIES,FEATURES,ITEMS,INTERVAL,begin,tick,respond,pause,resume,advance,deck} from './model.mjs';
+// Use the media playback session on iPad; older browsers keep their default.
+try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch{}
 const $=id=>document.getElementById(id),audio=$('speech'),icons=JSON.parse($('icon-assets').textContent),clips=JSON.parse($('audio-assets').textContent);
 const defaults={target:'animal',sound:true,volume:65},storage='fox-classification-settings-v1';
 let settings={...defaults};

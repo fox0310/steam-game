@@ -1,4 +1,6 @@
 import { trackPoint, paths, course } from './track.mjs';
+// Use the media playback session on iPad; older browsers keep their default.
+try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch{}
 const $=id=>document.getElementById(id);
 const routeNames={full:'全圓追視',upper:'上半圓追視',lower:'下半圓追視'};
 const vehicles={taxi:{name:'的士',facing:-1},truck:{name:'貨車',facing:1},schoolbus:{name:'黃色校巴',facing:1}};

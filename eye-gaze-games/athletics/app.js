@@ -1,4 +1,6 @@
 import { trackPoint, paths, course } from './track.mjs';
+// Use the media playback session on iPad; older browsers keep their default.
+try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch{}
 const $=id=>document.getElementById(id);
 const routeNames={full:'全圓追視',upper:'上半圓追視',lower:'下半圓追視'};
 const defaults={route:'full',duration:40,size:8,laps:1,direction:'forward',guide:false,sound:true,volume:30};
